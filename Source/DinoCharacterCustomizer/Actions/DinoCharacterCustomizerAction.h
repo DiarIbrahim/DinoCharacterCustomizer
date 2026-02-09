@@ -61,7 +61,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "UI")
 	FText ActionDisplayName = FText::FromString("Action");
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "UI")
-	TSoftClassPtr<UTexture2D> ActionDisplayImage;
+	TSoftObjectPtr<UTexture2D> ActionDisplayImage;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Transition")
 	TObjectPtr<UAnimMontage> TransitionAnimMontage;
@@ -85,7 +85,7 @@ public:
 	bool ValidateAction() const;
 	virtual bool ValidateAction_Implementation() const;
 
-	// Applies the changes to the Character Customization pawn if this action called with a valid Character Customization pawn, other wise this call will be ignored
+	// notifies the changes to the Character Customization pawn if this action called with a valid Character Customization pawn, other wise this call will be ignored
 	UFUNCTION(BlueprintCallable)
 	void CommitAction();
 	
