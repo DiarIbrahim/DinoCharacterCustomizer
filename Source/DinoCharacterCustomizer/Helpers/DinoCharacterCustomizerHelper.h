@@ -25,13 +25,13 @@ public:
 	 *  e.g. to get jacket (the instance tag) for the upperbody (the domain tag) in side the database 
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dino Character Customizer")
-	static bool GetCharacterInstanceData(UDinoCharacterDataBase* InDatabase, FGameplayTag Domain, FGameplayTag InstanceTag, FDinoCustomizableInstanceData& OutInstanceData);
+	static UDinoCharacterCustomizerAction* GetCharacterInstanceDataFromDatabase(UDinoCharacterDataBase* InDatabase, FGameplayTag Domain, FGameplayTag InstanceTag);
 
 	/*
 	 *   -- loads a character appearance data as a map of Domains and instance data (not used but may be helpful )
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dino Character Customizer")
-	static  TMap<FGameplayTag, FDinoCustomizableInstanceData> LoadCharacterAppearanceData(UDinoCharacterDataBase* InDatabase,const FDinoCharacterAppearance& CharacterAppearance);
+	static  TMap<FGameplayTag, UDinoCharacterCustomizerAction*> LoadCharacterAppearanceData(UDinoCharacterDataBase* InDatabase,const FDinoCharacterAppearance& CharacterAppearance);
 
 	/*
 	 *  generate a minimal character appearance from the provided data base

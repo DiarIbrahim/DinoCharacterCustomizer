@@ -122,33 +122,40 @@ void ADinoCharacterCustomizerPawn::ApplyCharacterAppearance(const FDinoCharacter
 {
 	for(const auto& Pair : CharacterAppearance.GetDomainsAsMap())
 	{
-		ModifyCustomizableDomainMesh(Pair.Key, Pair.Value);
+		const FGameplayTag Domain = Pair.Key;
+		const FGameplayTag InstanceTag = Pair.Value;
+		if(UDinoCharacterCustomizerAction* Action =  UDinoCharacterCustomizerHelper::GetCharacterInstanceDataFromDatabase(CharacterDataBase, Domain, InstanceTag))
+		{
+			ApplyCustomizationActionToDomain(Domain, Action);
+		}
 	}
 }
 
-void ADinoCharacterCustomizerPawn::ModifyCustomizableDomainMesh(FGameplayTag Domain, FGameplayTag InstanceTag)
+
+
+void ADinoCharacterCustomizerPawn::ApplyCustomizationActionToDomain(const FGameplayTag& Domain, UDinoCharacterCustomizerAction* Action)
 {
 	if(CharacterCustomizableDomains.Contains(Domain) == false) return;
-
 	
-	if(USkeletalMeshComponent* MeshComponent = *CharacterCustomizableDomains.Find(Domain))
-	{
-		FDinoCustomizableInstanceData OutInstanceData;
-		if(UDinoCharacterCustomizerHelper::GetCharacterInstanceData(CharacterDataBase, Domain, InstanceTag,OutInstanceData ))
-		{
-			
-			MeshComponent->SetSkeletalMesh(OutInstanceData.InstanceMesh.LoadSynchronous());
+	USkeletalMeshComponent* MeshComponent = CharacterCustomizableDomains[Domain];
 
-			// update appearance data
-			CurrentCharacterAppearance.AddOrUpdateDomainData(Domain, InstanceTag);
-			
-			// play animations here
-			// broad cast the change
-			// save an instance of current changes
-			
-		}
+	if(IsValid(Action))
+	{
+
+		FDinoCharacterCustomizerActionActivationData ActionData = FDinoCharacterCustomizerActionActivationData();
+		ActionData.OwningCustomizerPawn = this;
+		ActionData.TargetActor = Character;
+		ActionData.TargetDomainTag = Domain;
+		ActionData.TargetDomainObject = MeshComponent;
 		
+		Action->InitAction(ActionData);
 	}
+		
 }
 
+void ADinoCharacterCustomizerPawn::CommitCustomizationActionOnDomain(const FGameplayTag& DomainTag,
+	const FGameplayTag& InstanceTag)
+{
+	CurrentCharacterAppearance.AddOrUpdateDomainData(DomainTag, InstanceTag);
+}
 

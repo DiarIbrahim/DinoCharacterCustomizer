@@ -6,32 +6,31 @@
 #include "DinoCharacterCustomizer/Interfaces/DinoCustomizableCharacterInterface.h"
 #include "GameFramework/Character.h"
 
-bool UDinoCharacterCustomizerHelper::GetCharacterInstanceData(UDinoCharacterDataBase* InDatabase, FGameplayTag Domain,
-                                                              FGameplayTag InstanceTag, FDinoCustomizableInstanceData& OutInstanceData)
+
+UDinoCharacterCustomizerAction* UDinoCharacterCustomizerHelper::GetCharacterInstanceDataFromDatabase(
+	UDinoCharacterDataBase* InDatabase, FGameplayTag Domain, FGameplayTag InstanceTag)
 {
+	if(IsValid(InDatabase) == false) return nullptr;
 
-	if(IsValid(InDatabase) == false) return false;
-
-	if(InDatabase->CustomizableDomains.Contains(Domain) == false) return false;
+	if(InDatabase->CustomizableDomains.Contains(Domain) == false) return nullptr;
 
 	UDinoCharacterCustomizableDomainData* DomainData = *InDatabase->CustomizableDomains.Find(Domain);
 
-	for(const FDinoCustomizableInstanceData& Instance : DomainData->Instances)
+	for(UDinoCharacterCustomizerAction* Instance : DomainData->Instances)
 	{
-		if(Instance.CustomizableInstanceTag.MatchesTagExact(InstanceTag))
+		if(Instance->InstanceTag.MatchesTagExact(InstanceTag))
 		{
-			OutInstanceData = Instance;
-			return true;
+			return Instance;
 		}
 	}
 	
-	return false;
+	return nullptr;
 }
 
-TMap<FGameplayTag, FDinoCustomizableInstanceData> UDinoCharacterCustomizerHelper::LoadCharacterAppearanceData(
+TMap<FGameplayTag, UDinoCharacterCustomizerAction*> UDinoCharacterCustomizerHelper::LoadCharacterAppearanceData(
 	UDinoCharacterDataBase* InDatabase, const FDinoCharacterAppearance& CharacterAppearance)
 {
-	TMap<FGameplayTag, FDinoCustomizableInstanceData> CharacterInstanceData;
+	TMap<FGameplayTag, UDinoCharacterCustomizerAction*> CharacterInstanceData;
 
 	for(const auto& Pair : CharacterAppearance.GetDomainsAsMap())
 	{
@@ -40,9 +39,9 @@ TMap<FGameplayTag, FDinoCustomizableInstanceData> UDinoCharacterCustomizerHelper
 
 		UDinoCharacterCustomizableDomainData* DomainData = *InDatabase->CustomizableDomains.Find(Pair.Key);
 
-		for(const FDinoCustomizableInstanceData& Instance : DomainData->Instances)
+		for( UDinoCharacterCustomizerAction* Instance : DomainData->Instances)
 		{
-			if(Instance.CustomizableInstanceTag.MatchesTagExact(Pair.Value))
+			if(Instance->InstanceTag.MatchesTagExact(Pair.Value))
 			{
 				CharacterInstanceData.Add(Pair.Key, Instance);
 			}
@@ -61,13 +60,12 @@ FDinoCharacterAppearance UDinoCharacterCustomizerHelper::GenerateMinimalCharacte
 
 	for(const auto& Pair : InDatabase->CustomizableDomains)
 	{
-			if(Pair.Value->Instances.IsEmpty() == false)
-			{
-				FDinoCustomizableInstanceData InstanceData = Pair.Value->Instances[0];
-				AppearanceData.AddOrUpdateDomainData(Pair.Key, InstanceData.CustomizableInstanceTag);
-			}
+		if(Pair.Value->Instances.IsEmpty() == false)
+		{
+			UDinoCharacterCustomizerAction* Instance = Pair.Value->Instances[0];
+			AppearanceData.AddOrUpdateDomainData(Pair.Key, Instance->InstanceTag);
+		}
 	}
-	
 	
 	return AppearanceData;
 }
@@ -92,8 +90,8 @@ FDinoCharacterAppearance UDinoCharacterCustomizerHelper::GenerateMinimalCharacte
 		
 			if(Pair.Value->Instances.IsEmpty() == false)
 			{
-				FDinoCustomizableInstanceData InstanceData = Pair.Value->Instances[0];
-				AppearanceData.AddOrUpdateDomainData(Pair.Key, InstanceData.CustomizableInstanceTag);
+				UDinoCharacterCustomizerAction* Instance  = Pair.Value->Instances[0];
+				AppearanceData.AddOrUpdateDomainData(Pair.Key, Instance->InstanceTag);
 			}
 	}
 	
@@ -110,11 +108,11 @@ FDinoCharacterAppearance UDinoCharacterCustomizerHelper::GenerateRandomCharacter
 
 	for(const auto& Pair : InDatabase->CustomizableDomains)
 	{
-			if(Pair.Value->Instances.IsEmpty() == false)
-			{
-				FDinoCustomizableInstanceData RandomInstanceData = Pair.Value->Instances[FMath::RandRange(0,  Pair.Value->Instances.Num()-1)];
-				AppearanceData.AddOrUpdateDomainData(Pair.Key, RandomInstanceData.CustomizableInstanceTag);
-			}
+		if(Pair.Value->Instances.IsEmpty() == false)
+		{
+			UDinoCharacterCustomizerAction* Instance  = Pair.Value->Instances[FMath::RandRange(0,  Pair.Value->Instances.Num()-1)];
+			AppearanceData.AddOrUpdateDomainData(Pair.Key, Instance->InstanceTag);
+		}
 	}
 	
 	
@@ -140,9 +138,8 @@ FDinoCharacterAppearance UDinoCharacterCustomizerHelper::GenerateRandomCharacter
 		if(CharacterDomains.Contains(Pair.Key) == false) continue;
 			if(Pair.Value->Instances.IsEmpty() == false)
 			{
-				FDinoCustomizableInstanceData RandomInstanceInstanceData = Pair.Value->Instances[FMath::RandRange(0,  Pair.Value->Instances.Num()-1)];
-				
-				AppearanceData.AddOrUpdateDomainData(Pair.Key, RandomInstanceInstanceData.CustomizableInstanceTag);
+				UDinoCharacterCustomizerAction* Instance = Pair.Value->Instances[FMath::RandRange(0,  Pair.Value->Instances.Num()-1)];
+				AppearanceData.AddOrUpdateDomainData(Pair.Key, Instance->InstanceTag);
 			}
 		
 	}

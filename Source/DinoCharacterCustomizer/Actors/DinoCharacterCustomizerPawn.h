@@ -62,24 +62,33 @@ public:
 	// Sets default values for this actor's properties
 	ADinoCharacterCustomizerPawn();
 
-protected:
-
-	
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
+
+
+	UFUNCTION(BlueprintCallable)
+	void ApplyCharacterAppearance(const FDinoCharacterAppearance& CharacterAppearance);
+
+	//  starts the customization action, the action still may fail (see action's validation and init) 
+	UFUNCTION(BlueprintCallable)
+	void ApplyCustomizationActionToDomain(const FGameplayTag& Domain, UDinoCharacterCustomizerAction* Action);
+	
+	// this is called by customization actions when they successfully finish, here we update the our character appearance data after actions  
+	UFUNCTION(BlueprintCallable)
+	void CommitCustomizationActionOnDomain(const FGameplayTag& DomainTag, const FGameplayTag& InstanceTag);
+	
+	UFUNCTION(BlueprintCallable)
+	FDinoCharacterAppearance GetCharacterAppearance() const{ return CurrentCharacterAppearance;};
+
+	
+protected:
+
+	
 
 	void InitializeCharacter();
 
 	UFUNCTION(BlueprintCallable)
 	bool IsCharacterClassAllowed(TSubclassOf<ACharacter> InCharacterClass) const;
-	
-	UFUNCTION(BlueprintCallable)
-	void ApplyCharacterAppearance(const FDinoCharacterAppearance& CharacterAppearance);
-	
-	UFUNCTION(BlueprintCallable)
-	FDinoCharacterAppearance GetCharacterAppearance() const{ return CurrentCharacterAppearance;};
 
-	UFUNCTION(BlueprintCallable)
-	void ModifyCustomizableDomainMesh(FGameplayTag Domain, FGameplayTag InstanceTag);
 };

@@ -7,6 +7,9 @@
 #include "UObject/Interface.h"
 #include "DinoCustomizableCharacterInterface.generated.h"
 
+
+
+
 // This class does not need to be modified.
 UINTERFACE()
 class UDinoCustomizableCharacterInterface : public UInterface
