@@ -45,6 +45,11 @@ struct FDinoCharacterCustomizerCameraSettings
 		{
 			return false;
 		}
+
+		if (FMath::IsNearlyEqual(Other.FOV, FOV, Tolerance) == false)
+		{
+			return false;
+		}
 		
 		return true;
 	}
