@@ -3,14 +3,13 @@
 
 #include "DinoCharacterCustomizerPawn.h"
 
-#include "PrimitiveSceneDesc.h"
 #include "Camera/CameraComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/TextRenderComponent.h"
 #include "DinoCharacterCustomizer/Helpers/DinoCharacterCustomizerHelper.h"
 #include "DinoCharacterCustomizer/Interfaces/DinoCustomizableCharacterInterface.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/SpringArmComponent.h"
 
 
 // Sets default values
@@ -29,9 +28,15 @@ ADinoCharacterCustomizerPawn::ADinoCharacterCustomizerPawn()
 	CharacterDirection->SetupAttachment(CharacterPlacementLocation);
 	CharacterDirection->SetRelativeLocation(FVector(0, 0, 60));
 
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArm->SetupAttachment(Root);
+	
 	Camera = CreateDefaultSubobject<UCameraComponent>(FName("Camera"));
-	Camera->SetupAttachment(Root);
+	Camera->SetupAttachment(SpringArm);
 
+	SpringArm->TargetArmLength = 300.0f;
+	SpringArm->SetRelativeRotation(FRotator(0, 180, 0));
+	SpringArm->SetRelativeLocation(FVector(0, 0, 80));
 
 
 }
@@ -43,15 +48,50 @@ void ADinoCharacterCustomizerPawn::BeginPlay()
 	// init before begin play
 	InitializeCharacter();
 
+	CurrentCameraSettings.DistanceToTarget = SpringArm->TargetArmLength;
+	CurrentCameraSettings.TargetOffset = SpringArm->GetComponentLocation();
+	CurrentCameraSettings.RotationOffset = SpringArm->GetRelativeRotation() + FRotator(0.0f,180.0f,0.0f);
+	
+	ApplyDefaultCameraSettings();
 	
 	Super::BeginPlay();
 	
 }
 
+
+
 // Called every frame
 void ADinoCharacterCustomizerPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+
+	if(CurrentCameraSettings.IsNearlyEqual(TargetCameraSettings) == false)
+	{
+		// Arm length
+		CurrentCameraSettings.DistanceToTarget = FMath::FInterpTo(CurrentCameraSettings.DistanceToTarget, TargetCameraSettings.DistanceToTarget, DeltaTime, TargetCameraSettings.LerpSpeed);
+
+		// FOV
+		CurrentCameraSettings.FOV =  FMath::FInterpTo(CurrentCameraSettings.FOV, TargetCameraSettings.FOV, DeltaTime, TargetCameraSettings.LerpSpeed);
+
+		// Rot
+		CurrentCameraSettings.RotationOffset = FMath::RInterpTo(CurrentCameraSettings.RotationOffset, TargetCameraSettings.RotationOffset, DeltaTime, TargetCameraSettings.LerpSpeed);
+
+		FVector TargetLocation = Root->GetComponentLocation() + TargetCameraSettings.TargetOffset;
+		
+		if(Character->GetMesh()->DoesSocketExist(TargetCameraSettings.CharacterSocketAsTarget))
+		{
+			// override to start from the socket location
+			TargetLocation = Character->GetMesh()->GetSocketLocation(TargetCameraSettings.CharacterSocketAsTarget) + TargetCameraSettings.TargetOffset;
+		}
+
+		// LOC
+		CurrentCameraSettings.TargetOffset = FMath::VInterpTo(CurrentCameraSettings.TargetOffset, TargetLocation, DeltaTime, TargetCameraSettings.LerpSpeed);
+		
+
+		ApplyCurrentCameraSettings_Internal(CurrentCameraSettings);
+		
+	}
 }
 
 void ADinoCharacterCustomizerPawn::OnConstruction(const FTransform& Transform)
@@ -80,6 +120,18 @@ void ADinoCharacterCustomizerPawn::OnConstruction(const FTransform& Transform)
 
 #endif
 	
+}
+
+void ADinoCharacterCustomizerPawn::ApplyCameraSettings(const FDinoCharacterCustomizerCameraSettings& InCameraSettings)
+{
+	if(TargetCameraSettings.IsNearlyEqual(InCameraSettings) ) return;
+
+	TargetCameraSettings = InCameraSettings;
+}
+
+void ADinoCharacterCustomizerPawn::ApplyDefaultCameraSettings()
+{
+	TargetCameraSettings = DefaultCameraSettings;
 }
 
 void ADinoCharacterCustomizerPawn::InitializeCharacter()
@@ -159,3 +211,12 @@ void ADinoCharacterCustomizerPawn::CommitCustomizationActionOnDomain(const FGame
 	CurrentCharacterAppearance.AddOrUpdateDomainData(DomainTag, InstanceTag);
 }
 
+
+void ADinoCharacterCustomizerPawn::ApplyCurrentCameraSettings_Internal(const FDinoCharacterCustomizerCameraSettings& CameraSettings)
+{
+
+	SpringArm->TargetArmLength = CameraSettings.DistanceToTarget;
+	SpringArm->SetWorldLocation(CameraSettings.TargetOffset);
+	SpringArm->SetRelativeRotation(FRotator(0.0f,180.0f,0.0f)+ CurrentCameraSettings.RotationOffset);
+	Camera->FieldOfView = CameraSettings.FOV;
+}

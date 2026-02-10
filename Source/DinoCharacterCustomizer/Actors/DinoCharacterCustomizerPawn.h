@@ -10,6 +10,7 @@
 #include "GameFramework/Pawn.h"
 #include "DinoCharacterCustomizerPawn.generated.h"
 
+class USpringArmComponent;
 class UCameraComponent;
 class UArrowComponent;
 
@@ -33,9 +34,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Customizer")
 	TSubclassOf<ACharacter> CharacterClass;
 
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Character Customizer|Camera")
-	float DefaultCameraDistance = 300.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Character Customizer|Camera", DisplayName= "Default Camera Setting")
+	FDinoCharacterCustomizerCameraSettings DefaultCameraSettings;
 	
 	UPROPERTY(EditAnywhere)
 	USceneComponent* Root;
@@ -45,6 +45,8 @@ protected:
 	// Character Direction (Only Y-Axis)
 	UPROPERTY(EditAnywhere)
 	UArrowComponent* CharacterDirection;
+	UPROPERTY(EditAnywhere)
+	USpringArmComponent* SpringArm;
 	UPROPERTY(EditAnywhere)
 	UCameraComponent* Camera;
 
@@ -56,6 +58,11 @@ protected:
 	TMap<FGameplayTag, USkeletalMeshComponent*> CharacterCustomizableDomains;
 	UPROPERTY()
 	FDinoCharacterAppearance CurrentCharacterAppearance;
+	
+	UPROPERTY()
+	FDinoCharacterCustomizerCameraSettings CurrentCameraSettings;
+	UPROPERTY()
+	FDinoCharacterCustomizerCameraSettings TargetCameraSettings;
 
 	
 public:
@@ -63,6 +70,7 @@ public:
 	ADinoCharacterCustomizerPawn();
 
 	virtual void BeginPlay() override;
+
 	virtual void Tick(float DeltaTime) override;
 	virtual void OnConstruction(const FTransform& Transform) override;
 
@@ -81,6 +89,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FDinoCharacterAppearance GetCharacterAppearance() const{ return CurrentCharacterAppearance;};
 
+	// camera settings
+	UFUNCTION(BlueprintCallable)
+	void ApplyCameraSettings(const FDinoCharacterCustomizerCameraSettings& InCameraSettings);
+
+	// camera settings
+	UFUNCTION(BlueprintCallable)
+	void ApplyDefaultCameraSettings();
+
 	
 protected:
 
@@ -91,4 +107,5 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	bool IsCharacterClassAllowed(TSubclassOf<ACharacter> InCharacterClass) const;
 
+	void ApplyCurrentCameraSettings_Internal(const FDinoCharacterCustomizerCameraSettings& CameraSettings);
 };

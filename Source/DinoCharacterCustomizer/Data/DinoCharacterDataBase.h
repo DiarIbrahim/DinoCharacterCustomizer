@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "DinoCharacterCustomizer/Actions/DinoCharacterCustomizerAction.h"
+#include "DinoCharacterCustomizer/Camera/DinoCharacterCustomizerCameraSettings.h"
 #include "Engine/DataAsset.h"
 #include "DinoCharacterDataBase.generated.h"
 
@@ -24,7 +25,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced)
 	TArray<UDinoCharacterCustomizerAction*> Instances; 
 	
-	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Camera")
+	FDinoCharacterCustomizerCameraSettings CameraSettings;
+
 
 };
 
