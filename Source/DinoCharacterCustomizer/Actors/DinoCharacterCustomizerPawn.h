@@ -55,7 +55,7 @@ protected:
 	ACharacter* Character;
 
 	UPROPERTY()
-	TMap<FGameplayTag, USkeletalMeshComponent*> CharacterCustomizableDomains;
+	TMap<FGameplayTag, UObject*> CharacterCustomizableDomains;
 	UPROPERTY()
 	FDinoCharacterAppearance CurrentCharacterAppearance;
 	

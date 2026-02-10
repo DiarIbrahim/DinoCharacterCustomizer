@@ -189,7 +189,7 @@ void ADinoCharacterCustomizerPawn::ApplyCustomizationActionToDomain(const FGamep
 {
 	if(CharacterCustomizableDomains.Contains(Domain) == false) return;
 	
-	USkeletalMeshComponent* MeshComponent = CharacterCustomizableDomains[Domain];
+	UObject* DomainObject = CharacterCustomizableDomains[Domain];
 
 	if(IsValid(Action))
 	{
@@ -198,7 +198,7 @@ void ADinoCharacterCustomizerPawn::ApplyCustomizationActionToDomain(const FGamep
 		ActionData.OwningCustomizerPawn = this;
 		ActionData.TargetActor = Character;
 		ActionData.TargetDomainTag = Domain;
-		ActionData.TargetDomainObject = MeshComponent;
+		ActionData.TargetDomainObject = DomainObject;
 		
 		Action->InitAction(ActionData);
 	}

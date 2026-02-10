@@ -28,6 +28,6 @@ public:
 
 	// TMap<CustomizableDomain, Customizable Mesh> list of meshes that are customizable
 	UFUNCTION(BlueprintNativeEvent)
-	TMap<FGameplayTag, USkeletalMeshComponent*> GetCustomizableDomains() const;
+	TMap<FGameplayTag, UObject*> GetCustomizableDomains() const;
 	
 };
