@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "DinoCustomizer",
+	"Description": "Select and customize Anything",
+	"Category": "Other",
+	"CreatedBy": "Diar Ibrahim",
+	"CreatedByURL": "https://www.linkedin.com/in/diar-ibrahim-ali/",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "DinoCustomizer",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

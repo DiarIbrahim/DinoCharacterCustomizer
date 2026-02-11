@@ -1,0 +1,24 @@
+﻿// Code By : Diar Ibrahim,  Contact :  https://www.linkedin.com/in/diar-ibrahim-ali/
+
+
+#include "DinoCustomizerTags.h"
+
+
+#define DEFINE_TAG(TagName, Tag) UE_DEFINE_GAMEPLAY_TAG(TagName, Tag)
+
+
+
+
+DEFINE_TAG(DinoCustomizationTags::CustomizableDomain_FullBody,   "CustomizableDomain.FullBody")
+DEFINE_TAG(DinoCustomizationTags::CustomizableDomain_UpperBody,  "CustomizableDomain.UpperBody")
+DEFINE_TAG(DinoCustomizationTags::CustomizableDomain_LowerBody,  "CustomizableDomain.LowerBody")
+DEFINE_TAG(DinoCustomizationTags::CustomizableDomain_Head,       "CustomizableDomain.Head")
+DEFINE_TAG(DinoCustomizationTags::CustomizableDomain_Hand,       "CustomizableDomain.Hand")
+DEFINE_TAG(DinoCustomizationTags::CustomizableDomain_Foot,       "CustomizableDomain.Foot")
+DEFINE_TAG(DinoCustomizationTags::CustomizableDomain_Hair,       "CustomizableDomain.Hair")
+DEFINE_TAG(DinoCustomizationTags::CustomizableDomain_Beard,      "CustomizableDomain.Beard")
+DEFINE_TAG(DinoCustomizationTags::CustomizableDomain_EyeGlasses, "CustomizableDomain.EyeGlasses")
+
+DEFINE_TAG(DinoCustomizationTags::CustomizableInstance_Instance_1, "CustomizableInstance.Instance1")
+DEFINE_TAG(DinoCustomizationTags::CustomizableInstance_Instance_2, "CustomizableInstance.Instance2")
+DEFINE_TAG(DinoCustomizationTags::CustomizableInstance_Instance_3, "CustomizableInstance.Instance3")
