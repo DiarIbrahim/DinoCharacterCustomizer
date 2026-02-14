@@ -61,7 +61,7 @@ protected:
 	UMeshComponent* CurrentCustomizableActorMainMesh;
 	// current appearance data for current customizable actor
 	UPROPERTY()
-	FDinoCustomizationAppearance CurrentCharacterAppearance;
+	FDinoCustomizationAppearance CurrentCustomizationAppearance;
 
 	// camera settings data currently active 
 	UPROPERTY()
@@ -103,11 +103,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool InitializeCustomizationFromDatabase(UDinoCustomizationDataBase* InCustomizationDatabase, bool bApplyMinimalAppearanceFromDataBase = true);
 	
-
 	UFUNCTION(BlueprintPure)
-	FDinoCustomizationAppearance GetCharacterAppearance() const{ return CurrentCharacterAppearance;};
+	FDinoCustomizationAppearance GetCustomizationAppearance() const{ return CurrentCustomizationAppearance;};
 	UFUNCTION(BlueprintPure)
-	UDinoCustomizationDataBase* GetCustomizationDataBase() const { return CurrentCustomizationDataBase;}
+	UDinoCustomizationDataBase* GetCustomizationDatabase() const { return CurrentCustomizationDataBase;}
 	UFUNCTION(BlueprintPure)
 	AActor* GetCurrentCustomizableActor() const { return CurrentCustomizableActor;}
 	

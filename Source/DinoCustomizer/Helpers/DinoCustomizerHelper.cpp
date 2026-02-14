@@ -91,7 +91,7 @@ FDinoCustomizationAppearance UDinoCustomizerHelper::GenerateRandomCustomizationA
 	return AppearanceData;
 }
 
-FGameplayTag UDinoCustomizerHelper::GetCharacterAppearanceDomainInstance(
+FGameplayTag UDinoCustomizerHelper::GetAppearanceDomainInstance(
 	const FDinoCustomizationAppearance& CharacterAppearance, FGameplayTag DomainTag)
 {
 	TMap<FGameplayTag,FGameplayTag> Map = CharacterAppearance.GetDomainsAsMap();

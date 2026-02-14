@@ -10,6 +10,35 @@
 
 
 /*
+ * a sub domain is a customization to a domain instance
+ *
+ *	e.g.
+ *		A domain can be UpperBody
+ *		The Instance of that domain can be a Jacket that is applied to the upper body domain
+ *		A sub domain is the customization that we want to do that specific instance
+ *		like a material change, that can be and will only apply to that instance
+ */
+
+USTRUCT(BlueprintType)
+struct  FDinoCustomizationAppearanceSubDomainData : public FFastArraySerializerItem
+{
+	GENERATED_BODY()
+
+	FDinoCustomizationAppearanceSubDomainData(){}
+	FDinoCustomizationAppearanceSubDomainData(FGameplayTag InSubDomainTag, FGameplayTag InSubInstanceTag):SubDomainTag(InSubDomainTag), SubInstanceTag(InSubInstanceTag){}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag SubDomainTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag SubInstanceTag;
+	
+	
+};
+
+
+
+/*
  *  a Domain is any customizable part of the character like Hand, upperBody, lowerBody and so on
  *  an Instance is an instance or a change that can be applied to the domain, e.g. like a hair style that can be applied to hair domain
  */
@@ -27,6 +56,10 @@ struct  FDinoCustomizationAppearanceDomainData : public FFastArraySerializerItem
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTag InstanceTag;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameplayTag InstanceMaterialTag;
 	
 	
 };

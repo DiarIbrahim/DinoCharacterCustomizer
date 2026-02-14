@@ -243,7 +243,7 @@ void ADinoCustomizerStudio::ApplyCustomizationActionToDomain(const FGameplayTag&
 void ADinoCustomizerStudio::CommitCustomizationActionOnDomain(const FGameplayTag& DomainTag,
 	const FGameplayTag& InstanceTag)
 {
-	CurrentCharacterAppearance.AddOrUpdateDomainData(DomainTag, InstanceTag);
+	CurrentCustomizationAppearance.AddOrUpdateDomainData(DomainTag, InstanceTag);
 }
 
 
