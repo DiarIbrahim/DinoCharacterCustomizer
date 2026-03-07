@@ -22,6 +22,7 @@ public:
 	FText SubDomainDisplayName = FText::FromString("Sub Domain");
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SubDomain")
 	TSoftObjectPtr<UTexture2D> SubDomainDisplayImage;
+
 	
 	UPROPERTY(BlueprintReadOnly)
 	TArray<UDinoCustomizerSubAction*> SubInstances;
@@ -29,5 +30,17 @@ public:
 	UDinoCustomizerSubAction* AddSubInstances(TSubclassOf<UDinoCustomizerSubAction> SubInstanceClass);
 	UDinoCustomizerSubAction* DuplicateSubInstances(UDinoCustomizerSubAction* SourceSubInstance);
 	bool RemoveSubInstances(UDinoCustomizerSubAction* SubInstanceToRemove);
+
+	UFUNCTION(BlueprintCallable)
+	UDinoCustomizerSubAction* GetMinimalSubInstance();
+	UFUNCTION(BlueprintCallable)
+	UDinoCustomizerSubAction* GetRandomSubInstance();
+
+	
+
+	bool MoveSubInstanceOrderUp(UDinoCustomizerSubAction* SubInstance);
+	bool MoveSubInstanceOrderDown(UDinoCustomizerSubAction* SubInstance);
+	
 	void GetNewInstanceName(FName& NewActionName);
+	FGameplayTag GetNextSubInstanceTag();
 };

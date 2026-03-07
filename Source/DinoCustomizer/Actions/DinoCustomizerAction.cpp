@@ -36,35 +36,25 @@ void UDinoCustomizerAction::ApplyDefaultSubAction()
 	
 	// first we apply sub actions we received when this action started
 
-	/*
+	
 	for(const auto& Pair : CurrentActivationData.ActiveSubDomains)
 	{
-		if(SubDomains.Contains(Pair.Key) == false) continue;
-
-		FDinoCustomizerSubDomainContainer SubDomainContainer = SubDomains[Pair.Key];
-
-		if(UDinoCustomizerSubAction* SubAction = SubDomainContainer.FindSubDomainInstance(Pair.Value))
+		for(UDinoCustomizerSubDomain* SubDomain :  SubDomains)
 		{
-			ApplySubActionOnSubDomain(SubAction, Pair.Key);
+			if(Pair.Key.MatchesTagExact(SubDomain->SubDomainTag))
+			{
+				for(UDinoCustomizerSubAction* SubAction :  SubDomain->SubInstances)
+				{
+					ApplySubActionOnSubDomain(SubAction, Pair.Key);
+					break;
+				}
+
+				break;
+			}
 		}
 		
 	}
-	*/
 	
-
-	/*for(const auto& Pair : SubDomains)
-	{
-		// No default for this sub domain since we already have an active received during the activation
-		if(CurrentActivationData.ActiveSubDomains.Contains(Pair.Key)) continue;
-		
-		if(Pair.Value.bApplyFirstSubAction)
-		{
-			if(Pair.Value.SubActions.IsEmpty() == false)
-			{
-				ApplySubActionOnSubDomain(Pair.Value.SubActions[0], Pair.Key);
-			}
-		}
-	}*/
 }
 
 void UDinoCustomizerAction::OnActionStarted_Implementation(const FDinoCustomizerActionActivationData& ActivationData)
@@ -89,6 +79,10 @@ void UDinoCustomizerAction::CommitAction()
 }
 
 
+void UDinoCustomizerAction::OnTick_Implementation(float DeltaTime)
+{
+}
+
 void UDinoCustomizerAction::EndAction()
 {
 
@@ -99,6 +93,11 @@ void UDinoCustomizerAction::EndAction()
 
 void UDinoCustomizerAction::OnActionEnded_Implementation()
 {
+}
+
+bool UDinoCustomizerAction::ShouldReceiveTick_Implementation()
+{
+	return false;
 }
 
 void UDinoCustomizerAction::ApplySubActionOnSubDomain(UDinoCustomizerSubAction* SubAction, const FGameplayTag& SubDomainTag)
@@ -137,6 +136,31 @@ bool UDinoCustomizerAction::RemoveSubDomain(UDinoCustomizerSubDomain* SubDomainT
 		SubDomains.Remove(SubDomainToRemove);
 		return true;
 	}
+	return false;
+}
+
+bool UDinoCustomizerAction::MoveSubDomainOrderUp(UDinoCustomizerSubDomain* SubDomain)
+{
+	int32 Index = SubDomains.Find(SubDomain);
+
+	if (Index != INDEX_NONE && Index > 0)
+	{
+		SubDomains.Swap(Index, Index - 1);
+		return true;
+	}
+	return false;
+}
+
+bool UDinoCustomizerAction::MoveSubDomainOrderDown(UDinoCustomizerSubDomain* SubDomain)
+{
+	int32 Index = SubDomains.Find(SubDomain);
+
+	if (Index != INDEX_NONE && Index < SubDomains.Num() - 1)
+	{
+		SubDomains.Swap(Index, Index + 1);
+		return true;
+	}
+
 	return false;
 }
 

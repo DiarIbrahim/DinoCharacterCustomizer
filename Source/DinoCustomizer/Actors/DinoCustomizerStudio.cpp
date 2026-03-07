@@ -222,23 +222,15 @@ bool ADinoCustomizerStudio::IsCustomizableClassAllowed(TSubclassOf<AActor> InAct
 
 void ADinoCustomizerStudio::ApplyCustomizationActionToDomain(const FGameplayTag& Domain, UDinoCustomizerAction* Action, TMap<FGameplayTag,FGameplayTag> SubDomains)
 {
-	if(CurrentCustomizableDomains.Contains(Domain) == false) return;
-	
-	UObject* DomainObject = CurrentCustomizableDomains[Domain];
 
-	if(IsValid(Action))
+	if(IsValid(CurrentCustomizableActor))
 	{
-
-		FDinoCustomizerActionActivationData ActionData = FDinoCustomizerActionActivationData();
-		ActionData.OwningCustomizerPawn = this;
-		ActionData.TargetActor = CurrentCustomizableActor;
-		ActionData.TargetDomainTag = Domain;
-		ActionData.TargetDomainObject = DomainObject;
-		ActionData.ActiveSubDomains = SubDomains;
-
-		Action->InitAction(ActionData);
+		if(UDinoCustomizerComponent* CustomizerComponent = CurrentCustomizableActor->GetComponentByClass<UDinoCustomizerComponent>())
+		{
+			CustomizerComponent->ApplyInstanceToDomainFromStudio(this, Domain, Action, SubDomains);
+		}
 	}
-		
+	
 }
 
 void ADinoCustomizerStudio::ApplyCustomizationActionToDomainNoSubDomain(const FGameplayTag& Domain, UDinoCustomizerAction* Action)

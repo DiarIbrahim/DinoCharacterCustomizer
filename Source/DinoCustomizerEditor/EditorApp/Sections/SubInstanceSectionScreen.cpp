@@ -3,6 +3,7 @@
 #include "SubInstanceSectionScreen.h"
 
 #include "DinoCustomizerEditor/DinoButtons/SubInstanceButton.h"
+#include "DinoCustomizerEditor/Helpers/DinoCustomizerEditorHelper.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SSeparator.h"
 
@@ -22,6 +23,8 @@ void SSubInstanceSectionScreen::Construct(const FArguments& InArgs)
 	// Create details view (this returns a TSharedRef)
 	DetailsView = PropertyModule.CreateDetailView(DetailsViewArgs);
 	DetailsView->SetObject(CurrentSubInstance.Get());
+	DetailsView->SetIsPropertyVisibleDelegate(DinoHelper::MakePropertyVisibilityDelegate());
+
 
 	ChildSlot
 	[

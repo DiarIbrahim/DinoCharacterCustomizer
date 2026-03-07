@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "DinoCustomizer/Components/DinoCustomizerComponent.h"
 #include "SubDomain/DinoCustomizerSubAction.h"
 #include "SubDomain/DinoCustomizerSubDomain.h"
 #include "UObject/Object.h"
@@ -19,6 +20,8 @@ struct FDinoCustomizerActionActivationData
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	ADinoCustomizerStudio* OwningCustomizerPawn;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UDinoCustomizerComponent* OwningComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	AActor* TargetActor;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -70,7 +73,6 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Instance", meta=(Categories="CustomizableInstance"))
 	FGameplayTag InstanceTag;
-	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Instance")
 	FText ActionDisplayName = FText::FromString("Action Instance");
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Instance")
@@ -105,11 +107,20 @@ public:
 	// notifies the changes to the Character Customization pawn if this action called with a valid Character Customization pawn, other wise this call will be ignored
 	UFUNCTION(BlueprintCallable)
 	void CommitAction();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnTick(float DeltaTime);
+	virtual void OnTick_Implementation(float DeltaTime);
 	
 	void EndAction();
 	UFUNCTION(BlueprintNativeEvent)
 	void OnActionEnded();
 	virtual void OnActionEnded_Implementation();
+
+	// 
+	UFUNCTION(BlueprintNativeEvent)
+	bool ShouldReceiveTick();
+	virtual bool ShouldReceiveTick_Implementation();
 
 	/*
 	 *  To Apply a sub action 
@@ -121,7 +132,12 @@ public:
 	UDinoCustomizerSubDomain* AddSubDomain();
 	UDinoCustomizerSubDomain*  DuplicateSubDomain(UDinoCustomizerSubDomain* SubDomainToReplicate);
 	bool RemoveSubDomain(UDinoCustomizerSubDomain* SubDomainToRemove);
+	bool MoveSubDomainOrderUp(UDinoCustomizerSubDomain* SubDomain);
+	bool MoveSubDomainOrderDown(UDinoCustomizerSubDomain* SubDomain);
+	
+	
 
 	FName GetNewSubDomainName();
+	
 	
 };

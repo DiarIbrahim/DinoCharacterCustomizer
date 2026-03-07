@@ -47,8 +47,9 @@ private:
 
 	void RebuildDomainsUI();
 	FReply OnAddDomainClicked();
-	void HandleDomainSelected(UDinoCustomizerDatabaseDomain* Domain);
-	void HandleDomainDeleted(UDinoCustomizerDatabaseDomain* Domain);
-	void MoveDomainOrderUp(UDinoCustomizerDatabaseDomain* DinoCustomizerDatabaseDomain);
-	void MoveDomainOrderDown(UDinoCustomizerDatabaseDomain* DinoCustomizerDatabaseDomain);
+	void HandleDomainSelected(UObject* InDomainObj);
+	void HandleDomainDuplicated(UObject* InDomainObj);
+	void HandleDomainDeleted(UObject* InDomainObj);
+	void MoveDomainOrderUp(UObject* InDomainObj);
+	void MoveDomainOrderDown(UObject* InDomainObj);
 };

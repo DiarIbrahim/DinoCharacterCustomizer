@@ -3,6 +3,7 @@
 
 #include "DinoCustomizerSubDomain.h"
 #include "DinoCustomizerSubAction.h"
+#include "DinoCustomizer/Helpers/DinoCustomizerHelper.h"
 
 UDinoCustomizerSubAction* UDinoCustomizerSubDomain::AddSubInstances(TSubclassOf<UDinoCustomizerSubAction> SubInstanceClass)
 {
@@ -10,6 +11,7 @@ UDinoCustomizerSubAction* UDinoCustomizerSubDomain::AddSubInstances(TSubclassOf<
 	GetNewInstanceName(NewSubInstanceName);
 
 	UDinoCustomizerSubAction* NewSubInstance = NewObject<UDinoCustomizerSubAction>(this, SubInstanceClass, NewSubInstanceName);
+	NewSubInstance->SubInstanceTag = GetNextSubInstanceTag();
 	SubInstances.Add(NewSubInstance);
 
 	return NewSubInstance;
@@ -21,6 +23,7 @@ UDinoCustomizerSubAction* UDinoCustomizerSubDomain::DuplicateSubInstances(UDinoC
 	GetNewInstanceName(NewSubInstanceName);
 
 	UDinoCustomizerSubAction* NewSubInstance = DuplicateObject<UDinoCustomizerSubAction>(SourceSubInstance, this, NewSubInstanceName);
+	NewSubInstance->SubInstanceTag = GetNextSubInstanceTag();
 	SubInstances.Add(NewSubInstance);
 
 	return NewSubInstance;
@@ -31,6 +34,45 @@ bool UDinoCustomizerSubDomain::RemoveSubInstances(UDinoCustomizerSubAction* SubI
 	if(SubInstances.Contains(SubInstanceToRemove))
 	{
 		SubInstances.Remove(SubInstanceToRemove);
+		return true;
+	}
+
+	return false;
+}
+
+UDinoCustomizerSubAction* UDinoCustomizerSubDomain::GetMinimalSubInstance()
+{
+	if(SubInstances.IsEmpty()) return nullptr;
+	return SubInstances[0];
+}
+
+UDinoCustomizerSubAction* UDinoCustomizerSubDomain::GetRandomSubInstance()
+{
+	if(SubInstances.IsEmpty()) return nullptr;
+	if(SubInstances.Num() == 1) return SubInstances[0];
+
+	return SubInstances[FMath::RandRange(0, SubInstances.Num() - 1)];
+}
+
+bool UDinoCustomizerSubDomain::MoveSubInstanceOrderUp(UDinoCustomizerSubAction* SubInstance)
+{
+	int32 Index = SubInstances.Find(SubInstance);
+
+	if (Index != INDEX_NONE && Index > 0)
+	{
+		SubInstances.Swap(Index, Index - 1);
+		return true;
+	}
+	return false;
+}
+
+bool UDinoCustomizerSubDomain::MoveSubInstanceOrderDown(UDinoCustomizerSubAction* SubInstance)
+{
+	int32 Index = SubInstances.Find(SubInstance);
+
+	if (Index != INDEX_NONE && Index < SubInstances.Num() - 1)
+	{
+		SubInstances.Swap(Index, Index + 1);
 		return true;
 	}
 
@@ -59,4 +101,19 @@ void UDinoCustomizerSubDomain::GetNewInstanceName(FName& NewActionName)
 
 	NewActionName = FName(FString("SubInstance_").Append(FString::FromInt(++NumToUse)));
 	
+}
+
+FGameplayTag UDinoCustomizerSubDomain::GetNextSubInstanceTag()
+{
+	FGameplayTagContainer AlreadyUsedTags;
+
+	for(UDinoCustomizerSubAction* Inst : SubInstances)
+	{
+		if (IsValid(Inst))
+		{
+			AlreadyUsedTags.AddTag(Inst->SubInstanceTag);
+		}
+	}
+
+	return UDinoCustomizerHelper::GetNextUnUsedCustomizableSubInstanceTag(AlreadyUsedTags);
 }

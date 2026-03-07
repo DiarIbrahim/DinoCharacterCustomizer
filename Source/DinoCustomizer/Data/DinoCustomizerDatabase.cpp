@@ -4,6 +4,7 @@
 #include "DinoCustomizerDatabase.h"
 
 #include "DinoCustomizer/Actions/DinoCustomizerAction.h"
+#include "DinoCustomizer/Helpers/DinoCustomizerHelper.h"
 
 
 UDinoCustomizerDatabaseDomain::UDinoCustomizerDatabaseDomain()
@@ -19,7 +20,7 @@ UDinoCustomizerAction* UDinoCustomizerDatabaseDomain::AddNewInstance(TSubclassOf
 	FName NewActionName;
 	GetNewInstanceName(NewActionName);
 	UDinoCustomizerAction* NewAction = NewObject<UDinoCustomizerAction>(this,ActionClass, NewActionName);
-
+	NewAction->InstanceTag = GetNewInstanceTag();
 	Instances.Add(NewAction);
 
 	return NewAction;
@@ -47,12 +48,27 @@ void UDinoCustomizerDatabaseDomain::GetNewInstanceName(FName& NewActionName)
 	NewActionName = FName(FString("DomainInstance_").Append(FString::FromInt(++NumToUse)));
 }
 
+FGameplayTag UDinoCustomizerDatabaseDomain::GetNewInstanceTag()
+{
+	FGameplayTagContainer AlreadyUsedTags;
+
+	for(UDinoCustomizerAction* Inst : Instances)
+	{
+		if (IsValid(Inst))
+		{
+			AlreadyUsedTags.AddTag(Inst->InstanceTag);
+		}
+	}
+
+	return UDinoCustomizerHelper::GetNextUnUsedCustomizableInstanceTag(AlreadyUsedTags);
+}
+
 UDinoCustomizerAction* UDinoCustomizerDatabaseDomain::DuplicateInstance(UDinoCustomizerAction* Instance)
 {
 	FName NewActionName;
 	GetNewInstanceName(NewActionName);
 	UDinoCustomizerAction* NewAction = DuplicateObject<UDinoCustomizerAction>(Instance, this ,NewActionName);
-	NewAction->InstanceTag = FGameplayTag::EmptyTag;
+	NewAction->InstanceTag = GetNewInstanceTag();
 	Instances.Add(NewAction);
 
 	return NewAction;
@@ -64,6 +80,30 @@ bool UDinoCustomizerDatabaseDomain::RemoveInstance(UDinoCustomizerAction* Instan
 	
 		Instances.Remove(Instance);
 		return true;
+}
+
+bool UDinoCustomizerDatabaseDomain::MoveInstanceOrderDown(UDinoCustomizerAction* Instance)
+{
+	int32 Index = Instances.Find(Instance);
+
+	if (Index != INDEX_NONE && Index < Instances.Num()-1)
+	{
+		Instances.Swap(Index, Index + 1);
+		return true;
+	}
+	return false;
+}
+
+bool UDinoCustomizerDatabaseDomain::MoveInstanceOrderUp(UDinoCustomizerAction* Instance)
+{
+	int32 Index = Instances.Find(Instance);
+
+	if (Index != INDEX_NONE && Index > 0)
+	{
+		Instances.Swap(Index, Index - 1);
+		return true;
+	}
+	return false;
 }
 
 UDinoCustomizerAction* UDinoCustomizerDatabaseDomain::GetInstanceByTag(FGameplayTag InInstanceTag)
@@ -100,9 +140,8 @@ UDinoCustomizerAction* UDinoCustomizerDatabaseDomain::GetMinimalInstance()
 ///  ------  DATABASE  ------////
 /////////////////////////////////
 
-UDinoCustomizerDatabaseDomain* UDinoCustomizerDatabase::AddNewDatabaseDomain()
+FName UDinoCustomizerDatabase::GetNewDatabaseDomainName()
 {
-
 	int32 NumToUse = 0;
 	for(UDinoCustomizerDatabaseDomain* Domain : Domains)
 	{
@@ -120,8 +159,13 @@ UDinoCustomizerDatabaseDomain* UDinoCustomizerDatabase::AddNewDatabaseDomain()
 		
 	}
 
-	FName NewDomainName = FName(FString("Domain_").Append(FString::FromInt(++NumToUse)));
-	
+	return FName(FString("Domain_").Append(FString::FromInt(++NumToUse)));
+}
+
+UDinoCustomizerDatabaseDomain* UDinoCustomizerDatabase::AddNewDatabaseDomain()
+{
+	FName NewDomainName = GetNewDatabaseDomainName();
+
 	UDinoCustomizerDatabaseDomain* NewDomain = NewObject<UDinoCustomizerDatabaseDomain>(this, NewDomainName);
 	Domains.Add(NewDomain);
 
@@ -136,6 +180,17 @@ bool UDinoCustomizerDatabase::RemoveDatabaseDomain(UDinoCustomizerDatabaseDomain
 		return true;
 	}
 	return false;
+}
+
+UDinoCustomizerDatabaseDomain* UDinoCustomizerDatabase::DuplicateDatabaseDomain(UDinoCustomizerDatabaseDomain* Domain)
+{
+	FName NewDomainName = GetNewDatabaseDomainName();
+
+	UDinoCustomizerDatabaseDomain* NewDomain = DuplicateObject<UDinoCustomizerDatabaseDomain>(Domain, this, NewDomainName);
+	NewDomain->DomainTag = FGameplayTag::EmptyTag;
+	Domains.Add(NewDomain);
+
+	return NewDomain;
 }
 
 bool UDinoCustomizerDatabase::MoveDomainOrderUp(UDinoCustomizerDatabaseDomain* Domain)

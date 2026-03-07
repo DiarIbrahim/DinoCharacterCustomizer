@@ -8,6 +8,7 @@
 #include "DinoCustomizerEditor/DinoButtons/DinoDomainInstanceActionButton.h"
 #include "DinoCustomizerEditor/EditorClasses/DinoClassFilters.h"
 #include "DinoCustomizerEditor/EditorClasses/SDinoAddButton.h"
+#include "DinoCustomizerEditor/Helpers/DinoCustomizerEditorHelper.h"
 #include "Kismet2/SClassPickerDialog.h"
 
 
@@ -66,6 +67,7 @@ void SDomainContentSectionScreen::Construct(const FArguments& InArgs)
 void SDomainContentSectionScreen::SetDomain(UDinoCustomizerDatabaseDomain* InDomain)
 {
 	SelectedDomain = InDomain;
+	SelectedInstance = nullptr;
 	RebuildDomainContentWindow();
 }
 
@@ -134,20 +136,28 @@ void SDomainContentSectionScreen::RebuildDomainContentWindow()
 	];
 
 	InstanceButtons.Empty();
-	
+
+	int32 Index = -1;
 	for (UDinoCustomizerAction* Instance : SelectedDomain->Instances)
 	{
+		Index++;
 
 		TSharedPtr<SDinoDomainInstanceActionButton> NewButton = nullptr;
 		ScrollBox->AddSlot()
-		.Padding(2)
 		[
 			SAssignNew(NewButton, SDinoDomainInstanceActionButton)
-			.Action(Instance)
+			.Object(Instance)
 			.IsSelected(Instance == SelectedInstance)
-			.OnDeleted(this, &SDomainContentSectionScreen::OnInstanceDeleted)
-			.OnDuplicated(this, &SDomainContentSectionScreen::OnInstanceDuplicated)
-			.OnSelected(this, &SDomainContentSectionScreen::HandleInstanceSelected)
+			.Height(InstanceButtonHeight)
+			.ItemIndex(Index)
+			.NumItems(SelectedDomain->Instances.Num())
+			.Color_Lambda([this](){return SelectedDomain->DomainColor;})
+			.OnClicked(this, &SDomainContentSectionScreen::HandleInstanceSelected)
+			.OnDeleteClicked(this, &SDomainContentSectionScreen::OnInstanceDeleted)
+			.OnDuplicateClicked(this, &SDomainContentSectionScreen::OnInstanceDuplicated)
+			.OnMoveDownClicked(this, &SDomainContentSectionScreen::HandleInstanceMoveDown)
+			.OnMoveUpClicked(this, &SDomainContentSectionScreen::HandleInstanceMoveUp)
+
 		];
 
 		InstanceButtons.Add(NewButton);
@@ -155,22 +165,54 @@ void SDomainContentSectionScreen::RebuildDomainContentWindow()
 	
 }
 
-void SDomainContentSectionScreen::OnInstanceDeleted(UDinoCustomizerAction* DinoCustomizerAction)
+void SDomainContentSectionScreen::OnInstanceDeleted(UObject* InInstanceObj)
 {
-	SelectedDomain->RemoveInstance(DinoCustomizerAction);
-	RebuildDomainContentWindow();
-	OnInstanceDeletedDelegate.Execute(DinoCustomizerAction);
-
-	if (DinoCustomizerAction == SelectedInstance)
+	UDinoCustomizerAction* Instance = Cast<UDinoCustomizerAction>(InInstanceObj);
+	
+	if(SelectedDomain->RemoveInstance(Instance))
 	{
-		SelectedInstance = nullptr;
+		RebuildDomainContentWindow();
+		OnInstanceDeletedDelegate.Execute(Instance);
+		
+		if (Instance == SelectedInstance)
+		{
+			SelectedInstance = nullptr;
+		}
+	}
+
+}
+
+void SDomainContentSectionScreen::OnInstanceDuplicated(UObject* InInstanceObj)
+{
+	UDinoCustomizerAction* Instance = Cast<UDinoCustomizerAction>(InInstanceObj);
+	if(SelectedDomain->DuplicateInstance(Instance))
+	{
+		RebuildDomainContentWindow();
+	}
+	
+}
+
+void SDomainContentSectionScreen::HandleInstanceMoveDown(UObject* InInstanceObj)
+{
+	UDinoCustomizerAction* Instance = Cast<UDinoCustomizerAction>(InInstanceObj);
+	if(SelectedDomain->MoveInstanceOrderDown(Instance))
+	{
+		RebuildDomainContentWindow();
+
+		DinoHelper::MoveMouseVertical(InstanceButtonHeight);
 	}
 }
 
-void SDomainContentSectionScreen::OnInstanceDuplicated(UDinoCustomizerAction* DinoCustomizerAction)
+void SDomainContentSectionScreen::HandleInstanceMoveUp(UObject* InInstanceObj)
 {
-	SelectedDomain->DuplicateInstance(DinoCustomizerAction);
-	RebuildDomainContentWindow();
+	UDinoCustomizerAction* Instance = Cast<UDinoCustomizerAction>(InInstanceObj);
+
+	if(SelectedDomain->MoveInstanceOrderUp(Instance))
+	{
+		RebuildDomainContentWindow();
+		DinoHelper::MoveMouseVertical(-InstanceButtonHeight);
+
+	}
 }
 
 FReply SDomainContentSectionScreen::OnAddInstanceClicked()
@@ -212,23 +254,28 @@ FReply SDomainContentSectionScreen::OnAddInstanceClicked()
 	return FReply::Handled();
 }
 
-void SDomainContentSectionScreen::HandleInstanceSelected(UDinoCustomizerAction* Instance)
+void SDomainContentSectionScreen::HandleInstanceSelected(UObject* InInstanceObj)
 {
 
-	SelectedInstance = Instance;
+	SelectedInstance = Cast<UDinoCustomizerAction>(InInstanceObj);
 
 
 	for(TSharedPtr<SDinoDomainInstanceActionButton> Btn :  InstanceButtons)
 	{
-		if(Btn->ActionInstance->GetUniqueID() != Instance->GetUniqueID())
+		if(Btn->ActionInstance->GetUniqueID() == SelectedInstance->GetUniqueID())
+		{
+			Btn->SetSelected(true);
+		}else
 		{
 			Btn->SetSelected(false);
+			
 		}
+		
 	}
 	
 	
 	if (OnInstanceSelectedDelegate.IsBound())
 	{
-		OnInstanceSelectedDelegate.Execute(Instance);
+		OnInstanceSelectedDelegate.Execute(SelectedInstance.Get());
 	}
 }

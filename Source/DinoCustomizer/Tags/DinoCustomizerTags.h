@@ -10,11 +10,10 @@
 #define DECLARE_TAG2(Category, TagName) UE_DECLARE_GAMEPLAY_TAG_EXTERN(Category##_##TagName)
 
 
-
 namespace DinoCustomizationTags
 {
-
-	
+	// domains
+	DECLARE_TAG2(CustomizableDomain, Root)
 	DECLARE_TAG2(CustomizableDomain, FullBody)
 	DECLARE_TAG2(CustomizableDomain, UpperBody)
 	DECLARE_TAG2(CustomizableDomain, LowerBody)
@@ -26,6 +25,13 @@ namespace DinoCustomizationTags
 	DECLARE_TAG2(CustomizableDomain, EyeGlasses)
 
 
+	// sub domains
+	DECLARE_TAG2(CustomizableSubDomain, Root)
+	DECLARE_TAG2(CustomizableSubDomain, Material)
+
+
+	// instances
+	DECLARE_TAG2(CustomizableInstance, Root)
 	DECLARE_TAG2(CustomizableInstance, Instance_1)
 	DECLARE_TAG2(CustomizableInstance, Instance_2)
 	DECLARE_TAG2(CustomizableInstance, Instance_3)
@@ -33,21 +39,12 @@ namespace DinoCustomizationTags
 	DECLARE_TAG2(CustomizableInstance, Instance_5)
 	DECLARE_TAG2(CustomizableInstance, Instance_6)
 
-
-	// sub domains
-	
-	DECLARE_TAG2(CustomizableSubDomain, Material)
-
-
+	// sub instances
+	DECLARE_TAG2(CustomizableSubInstance, Root)
 	DECLARE_TAG2(CustomizableSubInstance, Instance_1)
 	DECLARE_TAG2(CustomizableSubInstance, Instance_2)
 	DECLARE_TAG2(CustomizableSubInstance, Instance_3)
 	DECLARE_TAG2(CustomizableSubInstance, Instance_4)
 	DECLARE_TAG2(CustomizableSubInstance, Instance_5)
 	DECLARE_TAG2(CustomizableSubInstance, Instance_6)
-
-
-	
-
-	
 }

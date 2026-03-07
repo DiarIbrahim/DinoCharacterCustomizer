@@ -54,6 +54,14 @@ public:
  */
 	UFUNCTION(BlueprintPure, Category = "Dino Customizer")
 	static FGameplayTag GetAppearanceSubDomainInstance(const FDinoCustomizationAppearance& CharacterAppearance, FGameplayTag DomainTag, FGameplayTag SubDomainTag);
-	
+
+
+	// by providing a list of instance tags, it will return next tag child of "CustomizableInstance" tag if any left 
+	UFUNCTION(BlueprintPure, Category = "Dino Customizer")
+	static FGameplayTag GetNextUnUsedCustomizableInstanceTag(const FGameplayTagContainer& UsedTags);
+
+	// by providing a list of instance tags, it will return next tag child of "CustomizableSubInstance" tag if any left 
+	UFUNCTION(BlueprintPure, Category = "Dino Customizer")
+	static FGameplayTag GetNextUnUsedCustomizableSubInstanceTag(const FGameplayTagContainer& UsedTags);
 	
 };

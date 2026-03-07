@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InstanceSettingsScreen.h"
 #include "DinoCustomizer/Actions/DinoCustomizerAction.h"
 #include "DinoCustomizer/Data/DinoCustomizerDatabase.h"
 #include "Widgets/SCompoundWidget.h"
@@ -10,7 +11,6 @@
 class SSubInstanceButton;
 class SInstanceSubDomainButton;
 class UDinoCustomizerDatabase;
-class UDinoCustomizableDatabaseDomain;
 class FDinoCustomizerDatabaseEditorApp;
 class SDinoDomainButton;
 
@@ -23,6 +23,7 @@ public:
 	SLATE_BEGIN_ARGS(SSubDomainSectionScreen) {}
 	SLATE_ARGUMENT(TWeakObjectPtr<UDinoCustomizerDatabase>, Database)
 	SLATE_ARGUMENT(TWeakObjectPtr<UDinoCustomizerSubDomain>, SubDomain)
+	SLATE_ATTRIBUTE(FLinearColor, DomainColor)
 	SLATE_EVENT(FOnSubInstanceDelegate, OnSubInstanceSelected)
 	SLATE_EVENT(FOnSubInstanceDelegate, OnSubInstanceDeleted)
 
@@ -36,15 +37,19 @@ void Construct(const FArguments& InArgs);
 	void RebuildSubInstances();
 
 	TWeakObjectPtr<UDinoCustomizerSubAction> SelectedSubInstance;
-
+	TAttribute<FLinearColor> DomainColor;
+	float SubInstanceButtonHeight = 65.0f;
 
 private:
 
 
 	FReply OnAddSubInstanceClicked();
-	void OnSubInstanceSelected(UDinoCustomizerSubAction* DinoCustomizerSubInstance);
-	void OnSubInstanceDuplicated(UDinoCustomizerSubAction* DinoCustomizerSubInstance);
-	void OnSubInstanceDeleted(UDinoCustomizerSubAction* DinoCustomizerSubInstance);
+	void OnSubInstanceSelected(UObject* InSubInstanceObj);
+	void OnSubInstanceDuplicated(UObject* InSubInstanceObj);
+	void OnSubInstanceDeleted(UObject* InSubInstanceObj);
+	void OnSubInstanceMoveUp(UObject* InSubInstanceObj);
+	void OnSubInstanceMoveDown(UObject* InSubInstanceObj);
+
 
 	
 	// Incoming

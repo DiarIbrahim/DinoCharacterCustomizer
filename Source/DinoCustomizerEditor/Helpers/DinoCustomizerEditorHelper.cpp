@@ -6,7 +6,7 @@
 
 
 
-FText TAG_TEXT(const FGameplayTag& InTag, bool bShowParent)
+FText DinoHelper::TAG_TEXT(const FGameplayTag& InTag, bool bShowParent)
 {
 	FText Text;
 	if(!bShowParent)

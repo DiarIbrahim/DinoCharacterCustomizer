@@ -10,93 +10,119 @@
 #include "Styling/AppStyle.h"
 #include "Windows/WindowsApplication.h"
 
-void SDinoDomainButton::Construct(const FArguments& InArgs)
+// void SDinoDomainButton::Construct(const FArguments& InArgs)
+// {
+// 	SDinoListButton::Construct(InArgs);
+// 	
+// 	OnClicked = InArgs._OnClicked;
+// 	OnDeleteClicked = InArgs._OnDeleteClicked;
+// 	OnMoveUpClicked = InArgs._OnMoveUpClicked;
+// 	OnMoveDownClicked = InArgs._OnMoveDownClicked;
+// 	//
+// 	// ChildSlot
+// 	// [
+// 	// 	SNew(SBox)
+// 	// 	.HeightOverride(Height)
+// 	// 	[
+// 	// 		SAssignNew(OuterBorder, SBorder)
+// 	// 		.BorderImage(this, &SDinoDomainButton::GetBorderBrush)
+// 	// 		.BorderBackgroundColor_Lambda([this]() { return Domain->DomainColor; })
+// 	// 		.Padding(2)
+// 	// 		[
+// 	// 			SNew(SButton)
+// 	// 			.ButtonColorAndOpacity_Lambda([this]() { return Domain->DomainColor; })
+// 	// 			.OnClicked(this, &SDinoDomainButton::HandleClicked)
+// 	// 			.ContentPadding(FMargin(2.0f, 8.0f, 12.0f,8.0f))
+// 	// 			[
+// 	// 				SNew(SHorizontalBox)
+// 	//
+// 	// 				// --- NEW: Left Column Move Buttons ---
+// 	// 				+ SHorizontalBox::Slot()
+// 	// 				.AutoWidth()
+// 	// 				.VAlign(VAlign_Center)
+// 	// 				.Padding(0,0,8,0)
+// 	// 				[
+// 	// 					SNew(SVerticalBox)
+// 	//
+// 	// 					+ SVerticalBox::Slot()
+// 	// 					.AutoHeight()
+// 	// 					[
+// 	// 						SNew(SButton)
+// 	// 						.IsEnabled(bSHowOrderUpButton)
+// 	// 						.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+// 	// 						.OnClicked(this, &SDinoDomainButton::HandleMoveUpClicked)
+// 	// 						.ToolTipText(FText::FromString("Move Up"))
+// 	// 						.ContentPadding(4)
+// 	// 						[
+// 	// 							SNew(SImage)
+// 	// 							.Image(FAppStyle::GetBrush("Icons.ChevronUp"))
+// 	// 							.DesiredSizeOverride(FVector2D(12,12))
+// 	// 						]
+// 	// 					]
+// 	// 					
+// 	// 					+ SVerticalBox::Slot()
+// 	// 					[
+// 	// 						SNew(SSpacer)
+// 	// 						.Size(FVector2D(0,10))
+// 	// 					]
+// 	//
+// 	// 					
+// 	// 					+ SVerticalBox::Slot()
+// 	// 					.AutoHeight()
+// 	// 					[
+// 	// 						SNew(SButton)
+// 	// 						.IsEnabled(bSHowOrderDownButton)
+// 	// 						.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+// 	// 						.OnClicked(this, &SDinoDomainButton::HandleMoveDownClicked)
+// 	// 						.ToolTipText(FText::FromString("Move Down"))
+// 	// 						.ContentPadding(4)
+// 	// 						[
+// 	// 							SNew(SImage)
+// 	// 							.Image(FAppStyle::GetBrush("Icons.ChevronDown"))
+// 	// 							.DesiredSizeOverride(FVector2D(12,12))
+// 	// 						]
+// 	// 					]
+// 	// 				]
+// 	//
+// 	// 				// --- Left Column: Stacked Text Data ---
+// 	// 				+ SHorizontalBox::Slot()
+// 	// 				.FillWidth(1.f)
+// 	// 				.VAlign(VAlign_Center)
+// 	// 				[
+// 	// 					
+// 	// 				]
+// 	//
+// 	// 				// --- Right Column: Delete Button ---
+// 	// 				+ SHorizontalBox::Slot()
+// 	// 				.AutoWidth()
+// 	// 				.VAlign(VAlign_Center)
+// 	// 				.Padding(8, 0, 0, 0)
+// 	// 				[
+// 	// 					SNew(SButton)
+// 	// 					.ButtonStyle(FAppStyle::Get(), "SimpleButton")
+// 	// 					.OnClicked(this, &SDinoDomainButton::HandleDeleteClicked)
+// 	// 					.ContentPadding(4)
+// 	// 					.ToolTipText(FText::FromString("Delete Domain"))
+// 	// 					[
+// 	// 						SNew(SImage)
+// 	// 						.Image(FAppStyle::GetBrush("Icons.Delete"))
+// 	// 						.DesiredSizeOverride(FVector2D(16, 16))
+// 	// 						.ColorAndOpacity(FSlateColor::UseForeground())
+// 	// 					]
+// 	// 				]
+// 	// 			]
+// 	// 		]
+// 	// 	]
+// 	// ];
+// }
+
+TSharedRef<SWidget> SDinoDomainButton::GetButtonContent()
 {
-	Domain = InArgs._Domain;
-	Height = InArgs._Height;
-	bIsSelected = InArgs._IsSelected;
-	OnClicked = InArgs._OnClicked;
-	OnDeleteClicked = InArgs._OnDeleteClicked;
-	OnMoveUpClicked = InArgs._OnMoveUpClicked;
-	OnMoveDownClicked = InArgs._OnMoveDownClicked;
-
-	bool bSHowOrderUpButton = InArgs._DomainIndex != 0;
-	bool bSHowOrderDownButton = InArgs._DomainIndex != InArgs._NumDomains-1;
-
+	
 	FSlateFontInfo TitleFont = FAppStyle::GetFontStyle("PropertyWindow.BoldFont");
 	TitleFont.Size = 16; 
 
-	ChildSlot
-	[
-		SNew(SBox)
-		.HeightOverride(Height)
-		[
-			SAssignNew(OuterBorder, SBorder)
-			.BorderImage(this, &SDinoDomainButton::GetBorderBrush)
-			.BorderBackgroundColor_Lambda([this]() { return Domain->DomainColor; })
-			.Padding(2)
-			[
-				SNew(SButton)
-				.ButtonColorAndOpacity_Lambda([this]() { return Domain->DomainColor; })
-				.OnClicked(this, &SDinoDomainButton::HandleClicked)
-				.ContentPadding(FMargin(2.0f, 8.0f, 12.0f,8.0f))
-				[
-					SNew(SHorizontalBox)
-
-					// --- NEW: Left Column Move Buttons ---
-					+ SHorizontalBox::Slot()
-					.AutoWidth()
-					.VAlign(VAlign_Center)
-					.Padding(0,0,8,0)
-					[
-						SNew(SVerticalBox)
-
-						+ SVerticalBox::Slot()
-						.AutoHeight()
-						[
-							SNew(SButton)
-							.IsEnabled(bSHowOrderUpButton)
-							.ButtonStyle(FAppStyle::Get(), "SimpleButton")
-							.OnClicked(this, &SDinoDomainButton::HandleMoveUpClicked)
-							.ToolTipText(FText::FromString("Move Up"))
-							.ContentPadding(4)
-							[
-								SNew(SImage)
-								.Image(FAppStyle::GetBrush("Icons.ChevronUp"))
-								.DesiredSizeOverride(FVector2D(12,12))
-							]
-						]
-						
-						+ SVerticalBox::Slot()
-						[
-							SNew(SSpacer)
-							.Size(FVector2D(0,10))
-						]
-
-						
-						+ SVerticalBox::Slot()
-						.AutoHeight()
-						[
-							SNew(SButton)
-							.IsEnabled(bSHowOrderDownButton)
-							.ButtonStyle(FAppStyle::Get(), "SimpleButton")
-							.OnClicked(this, &SDinoDomainButton::HandleMoveDownClicked)
-							.ToolTipText(FText::FromString("Move Down"))
-							.ContentPadding(4)
-							[
-								SNew(SImage)
-								.Image(FAppStyle::GetBrush("Icons.ChevronDown"))
-								.DesiredSizeOverride(FVector2D(12,12))
-							]
-						]
-					]
-
-					// --- Left Column: Stacked Text Data ---
-					+ SHorizontalBox::Slot()
-					.FillWidth(1.f)
-					.VAlign(VAlign_Center)
-					[
-						SNew(SVerticalBox)
+	return SNew(SVerticalBox)
 
 						+ SVerticalBox::Slot()
 						.AutoHeight()
@@ -130,84 +156,55 @@ void SDinoDomainButton::Construct(const FArguments& InArgs)
 							.ColorAndOpacity(FSlateColor(FLinearColor(0.3f, 0.6f, 1.0f)))
 							.Text_Lambda([this]()
 							{
-								return FText::FormatOrdered(FText::FromString("Domain : {0}"), TAG_TEXT(Domain->DomainTag));
+								return FText::FormatOrdered(FText::FromString("Domain : {0}"), DinoHelper::TAG_TEXT(Domain->DomainTag));
 							})
-						]
-					]
-
-					// --- Right Column: Delete Button ---
-					+ SHorizontalBox::Slot()
-					.AutoWidth()
-					.VAlign(VAlign_Center)
-					.Padding(8, 0, 0, 0)
-					[
-						SNew(SButton)
-						.ButtonStyle(FAppStyle::Get(), "SimpleButton")
-						.OnClicked(this, &SDinoDomainButton::HandleDeleteClicked)
-						.ContentPadding(4)
-						.ToolTipText(FText::FromString("Delete Domain"))
-						[
-							SNew(SImage)
-							.Image(FAppStyle::GetBrush("Icons.Delete"))
-							.DesiredSizeOverride(FVector2D(16, 16))
-							.ColorAndOpacity(FSlateColor::UseForeground())
-						]
-					]
-				]
-			]
-		]
-	];
+						];
 }
 
-void SDinoDomainButton::SetSelected(bool bSelected)
+void SDinoDomainButton::OnObjectSet(UObject* InObj)
 {
-	bIsSelected = bSelected;
-
-	if (OuterBorder.IsValid())
-	{
-		OuterBorder->Invalidate(EInvalidateWidget::LayoutAndVolatility);
-	}
+	SDinoListButton::OnObjectSet(InObj);
+	Domain = Cast<UDinoCustomizerDatabaseDomain>(InObj);
 }
 
-const FSlateBrush* SDinoDomainButton::GetBorderBrush() const
+FLinearColor SDinoDomainButton::GetButtonColor()
 {
-	return bIsSelected
-		? FAppStyle::GetBrush("FocusRectangle")
-		: FAppStyle::GetBrush("NoBorder");
+	return Domain->DomainColor;
 }
 
-FReply SDinoDomainButton::HandleClicked()
-{
-	if (OnClicked.IsBound())
-	{
-		OnClicked.Execute(Domain);
-	}
-	return FReply::Handled();
-}
-
-FReply SDinoDomainButton::HandleDeleteClicked()
-{
-	if (OnDeleteClicked.IsBound())
-	{
-		OnDeleteClicked.Execute(Domain);
-	}
-	return FReply::Handled();
-}
-
-FReply SDinoDomainButton::HandleMoveUpClicked()
-{
-	if (OnMoveUpClicked.IsBound())
-	{
-		OnMoveUpClicked.Execute(Domain);
-	}
-	return FReply::Handled();
-}
-
-FReply SDinoDomainButton::HandleMoveDownClicked()
-{
-	if (OnMoveDownClicked.IsBound())
-	{
-		OnMoveDownClicked.Execute(Domain);
-	}
-	return FReply::Handled();
-}
+//
+// FReply SDinoDomainButton::HandleClicked()
+// {
+// 	if (OnClicked.IsBound())
+// 	{
+// 		OnClicked.Execute(Domain);
+// 	}
+// 	return FReply::Handled();
+// }
+//
+// FReply SDinoDomainButton::HandleDeleteClicked()
+// {
+// 	if (OnDeleteClicked.IsBound())
+// 	{
+// 		OnDeleteClicked.Execute(Domain);
+// 	}
+// 	return FReply::Handled();
+// }
+//
+// FReply SDinoDomainButton::HandleMoveUpClicked()
+// {
+// 	if (OnMoveUpClicked.IsBound())
+// 	{
+// 		OnMoveUpClicked.Execute(Domain);
+// 	}
+// 	return FReply::Handled();
+// }
+//
+// FReply SDinoDomainButton::HandleMoveDownClicked()
+// {
+// 	if (OnMoveDownClicked.IsBound())
+// 	{
+// 		OnMoveDownClicked.Execute(Domain);
+// 	}
+// 	return FReply::Handled();
+// }

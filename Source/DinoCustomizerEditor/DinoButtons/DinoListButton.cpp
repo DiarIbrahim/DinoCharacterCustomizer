@@ -12,19 +12,23 @@
 
 void SDinoListButton::Construct(const FArguments& InArgs)
 {
+	
 	Object = InArgs._Object;
 	Height = InArgs._Height;
+	Color = InArgs._Color;
 	bIsSelected = InArgs._IsSelected;
 	OnClicked = InArgs._OnClicked;
 	OnDeleteClicked = InArgs._OnDeleteClicked;
 	OnMoveUpClicked = InArgs._OnMoveUpClicked;
 	OnMoveDownClicked = InArgs._OnMoveDownClicked;
+	OnDuplicateClicked = InArgs._OnDuplicateClicked;
 
 	bool bSHowOrderUpButton = InArgs._ItemIndex != 0;
 	bool bSHowOrderDownButton = InArgs._ItemIndex != InArgs._NumItems-1;
 
-	FSlateFontInfo TitleFont = FAppStyle::GetFontStyle("PropertyWindow.BoldFont");
-	TitleFont.Size = 16; 
+
+	OnObjectSet(Object);
+
 
 	ChildSlot
 	[
@@ -46,7 +50,7 @@ void SDinoListButton::Construct(const FArguments& InArgs)
 					// --- NEW: Left Column Move Buttons ---
 					+ SHorizontalBox::Slot()
 					.AutoWidth()
-					.VAlign(VAlign_Center)
+					.VAlign(VAlign_Fill)
 					.Padding(0,0,8,0)
 					[
 						SNew(SVerticalBox)
@@ -56,6 +60,7 @@ void SDinoListButton::Construct(const FArguments& InArgs)
 						[
 							SNew(SButton)
 							.IsEnabled(bSHowOrderUpButton)
+							.Visibility_Lambda([this, bSHowOrderUpButton](){return bSHowOrderUpButton ? EVisibility::Visible: EVisibility::Hidden;})
 							.ButtonStyle(FAppStyle::Get(), "SimpleButton")
 							.OnClicked(this, &SDinoListButton::HandleMoveUpClicked)
 							.ToolTipText(FText::FromString("Move Up"))
@@ -68,9 +73,10 @@ void SDinoListButton::Construct(const FArguments& InArgs)
 						]
 						
 						+ SVerticalBox::Slot()
-						.FillHeight(1)
 						[
-							SNew(SSpacer)
+							SNew(SBox)
+							.VAlign(VAlign_Fill)
+							
 						]
 
 						
@@ -79,6 +85,7 @@ void SDinoListButton::Construct(const FArguments& InArgs)
 						[
 							SNew(SButton)
 							.IsEnabled(bSHowOrderDownButton)
+							.Visibility_Lambda([this, bSHowOrderDownButton](){return bSHowOrderDownButton ? EVisibility::Visible: EVisibility::Hidden;})
 							.ButtonStyle(FAppStyle::Get(), "SimpleButton")
 							.OnClicked(this, &SDinoListButton::HandleMoveDownClicked)
 							.ToolTipText(FText::FromString("Move Down"))
@@ -104,7 +111,7 @@ void SDinoListButton::Construct(const FArguments& InArgs)
 					[
 						SNew(SButton)
 						.ButtonStyle(FAppStyle::Get(), "SimpleButton")
-						.ToolTipText(FText::FromString("Duplicate this action"))
+						.ToolTipText(FText::FromString("Duplicate this Item"))
 						.OnClicked(this, &SDinoListButton::HandleDuplicate)
 						[
 							SNew(SImage)
@@ -123,7 +130,7 @@ void SDinoListButton::Construct(const FArguments& InArgs)
 						.ButtonStyle(FAppStyle::Get(), "SimpleButton")
 						.OnClicked(this, &SDinoListButton::HandleDeleteClicked)
 						.ContentPadding(4)
-						.ToolTipText(FText::FromString("Delete Object"))
+						.ToolTipText(FText::FromString("Delete Item"))
 						[
 							SNew(SImage)
 							.Image(FAppStyle::GetBrush("Icons.Delete"))
@@ -145,6 +152,11 @@ void SDinoListButton::SetSelected(bool bSelected)
 	{
 		OuterBorder->Invalidate(EInvalidateWidget::LayoutAndVolatility);
 	}
+}
+
+void SDinoListButton::OnObjectSet(UObject* InObj)
+{
+	
 }
 
 const FSlateBrush* SDinoListButton::GetBorderBrush() const
@@ -174,9 +186,9 @@ TSharedRef<SWidget> SDinoListButton::GetButtonContent()
 		];
 }
 
-FColor SDinoListButton::GetButtonColor()
+FLinearColor SDinoListButton::GetButtonColor()
 {
-	return FColor::White;
+	return Color.Get();
 }
 
 FReply SDinoListButton::HandleClicked()
@@ -199,6 +211,10 @@ FReply SDinoListButton::HandleDeleteClicked()
 
 FReply SDinoListButton::HandleDuplicate()
 {
+	if (OnDuplicateClicked.IsBound())
+	{
+		OnDuplicateClicked.Execute(Object);
+	}
 	return FReply::Handled();
 }
 

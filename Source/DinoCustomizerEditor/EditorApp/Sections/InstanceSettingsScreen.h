@@ -9,7 +9,6 @@
 
 class SInstanceSubDomainButton;
 class UDinoCustomizerDatabase;
-class UDinoCustomizableDatabaseDomain;
 class FDinoCustomizerDatabaseEditorApp;
 class SDinoDomainButton;
 
@@ -22,6 +21,7 @@ public:
 	SLATE_BEGIN_ARGS(SInstanceSettingsScreen) {}
 	SLATE_ARGUMENT(TWeakObjectPtr<UDinoCustomizerDatabase>, Database)
 	SLATE_ARGUMENT(TWeakObjectPtr<UDinoCustomizerAction>, Action)
+	SLATE_ATTRIBUTE(FLinearColor, DomainColor)
 	SLATE_EVENT(FOnSubDomainDelegate, OnSubDomainSelected)
 	SLATE_EVENT(FOnSubDomainDelegate, OnSubDomainDeleted)
 
@@ -32,6 +32,7 @@ void Construct(const FArguments& InArgs);
 
 	void SetInstance(UDinoCustomizerAction* InActionInstance);
 
+
 	void RebuildSubDomains();
 	TWeakObjectPtr<UDinoCustomizerSubDomain> SelectedSubDomain;
 
@@ -39,16 +40,19 @@ void Construct(const FArguments& InArgs);
 
 private:
 
+	float SubDomainButtonHeight = 65.0f;
 
 	FReply OnAddSubDomainClicked();
-	void OnSubDomainSelected(UDinoCustomizerSubDomain* DinoCustomizerSubDomain);
-	void OnSubDomainDuplicated(UDinoCustomizerSubDomain* DinoCustomizerSubDomain);
-	void OnSubDomainDeleted(UDinoCustomizerSubDomain* DinoCustomizerSubDomain);
-
+	void OnSubDomainSelected(UObject* InSubDomainObj);
+	void OnSubDomainDuplicated(UObject* InSubDomainObj);
+	void OnSubDomainDeleted(UObject* InSubDomainObj);
+	void OnSubDomainMoveDown(UObject* InSubDomainObj);
+	void OnSubDomainMoveUp(UObject* InSubDomainObj);
 	
 	// Incoming
 	TWeakObjectPtr<UDinoCustomizerDatabase> Database;
 	TWeakObjectPtr<UDinoCustomizerAction> CurrentInstance;
+	TAttribute<FLinearColor> DomainColor;
 
 	FOnSubDomainDelegate OnInstanceSelectedDelegate;
 	FOnSubDomainDelegate OnInstanceDeletedDelegate;

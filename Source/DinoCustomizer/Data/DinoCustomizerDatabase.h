@@ -49,10 +49,16 @@ public:
 
 
 	UDinoCustomizerAction* AddNewInstance(TSubclassOf<UDinoCustomizerAction> ActionClass);
-	void GetNewInstanceName(FName& NewActionName);
 	UDinoCustomizerAction* DuplicateInstance(UDinoCustomizerAction* Instance);
 	bool RemoveInstance(UDinoCustomizerAction* Instance);
 
+	bool MoveInstanceOrderDown(UDinoCustomizerAction* Instance);
+	bool MoveInstanceOrderUp(UDinoCustomizerAction* Instance);
+
+	void GetNewInstanceName(FName& NewActionName);
+	// tries to fill instance tag for new Instance if valid instances tags left
+	FGameplayTag GetNewInstanceTag();
+	
 	/*
 	 *   Returns instance of the domain by tag
 	 */
@@ -101,14 +107,15 @@ public:
 	FVector ActorPlacementLocationOffset;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FRotator ActorPlacementRotationOffset;
-
+	
 
 	UPROPERTY(BlueprintReadOnly, Instanced)
 	TArray<UDinoCustomizerDatabaseDomain*> Domains;
-	
+
 
 	UDinoCustomizerDatabaseDomain* AddNewDatabaseDomain();
 	bool RemoveDatabaseDomain(UDinoCustomizerDatabaseDomain* Domain);
+	UDinoCustomizerDatabaseDomain* DuplicateDatabaseDomain(UDinoCustomizerDatabaseDomain* Domain);
 
 	bool MoveDomainOrderUp(UDinoCustomizerDatabaseDomain* Domain);
 	bool MoveDomainOrderDown(UDinoCustomizerDatabaseDomain* Domain);
@@ -117,6 +124,8 @@ public:
 	UFUNCTION(BlueprintCallable, meta=(Categories = "CustomizableDomain"))
 	UDinoCustomizerDatabaseDomain* GetDomainByTag(FGameplayTag InDomainTag);
 
+	FName GetNewDatabaseDomainName();
 };
+
 
 

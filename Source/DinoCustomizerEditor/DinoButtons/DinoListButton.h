@@ -19,22 +19,27 @@ public:
 	SLATE_ARGUMENT(int32, ItemIndex)
 	SLATE_ARGUMENT(int32, NumItems)
 	SLATE_ARGUMENT(bool, IsSelected)
+	SLATE_ATTRIBUTE(FLinearColor, Color)
+
 
 	SLATE_EVENT(FOnDinoListButtonClicked, OnClicked)
 	SLATE_EVENT(FOnDinoListButtonClicked, OnDeleteClicked)
+	SLATE_EVENT(FOnDinoListButtonClicked, OnDuplicateClicked)
 	SLATE_EVENT(FOnDinoListButtonClicked, OnMoveUpClicked)
 	SLATE_EVENT(FOnDinoListButtonClicked, OnMoveDownClicked)
+
 
 SLATE_END_ARGS()
 
 	void Construct(const FArguments& InArgs);
 
 	void SetSelected(bool bSelected);
+
+	virtual void OnObjectSet(UObject* InObj);
+	
 	UObject* GetObject() const { return Object; }
-
-
 	virtual TSharedRef<SWidget> GetButtonContent();
-	virtual FColor GetButtonColor();
+	virtual FLinearColor GetButtonColor();
 
 
 private:
@@ -51,7 +56,7 @@ private:
 private:
 
 	UObject* Object = nullptr;
-
+	TAttribute<FLinearColor> Color = FLinearColor::White;
 	float Height = 90.f;
 	bool bIsSelected = false;
 
@@ -59,7 +64,7 @@ private:
 
 	FOnDinoListButtonClicked OnClicked;
 	FOnDinoListButtonClicked OnDeleteClicked;
-
+	FOnDinoListButtonClicked OnDuplicateClicked;
 	FOnDinoListButtonClicked OnMoveUpClicked;
 	FOnDinoListButtonClicked OnMoveDownClicked;
 };

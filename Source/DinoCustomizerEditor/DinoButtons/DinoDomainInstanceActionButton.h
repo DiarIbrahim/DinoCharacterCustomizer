@@ -1,7 +1,9 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "DinoListButton.h"
 #include "Widgets/SCompoundWidget.h"
+#include "WorldPartition/WorldPartitionBuilder.h"
 
 class UDinoCustomizerAction;
 
@@ -9,21 +11,20 @@ DECLARE_DELEGATE_OneParam(FOnDinoActionSelected, UDinoCustomizerAction*);
 DECLARE_DELEGATE_OneParam(FOnDinoActionDeleted, UDinoCustomizerAction*);
 DECLARE_DELEGATE_OneParam(FOnDinoActionDuplicated, UDinoCustomizerAction*); // New Delegate
 
-class SDinoDomainInstanceActionButton : public SCompoundWidget
+class SDinoDomainInstanceActionButton : public SDinoListButton
 {
 public:
 
-	SLATE_BEGIN_ARGS(SDinoDomainInstanceActionButton) {}
-	SLATE_ARGUMENT(UDinoCustomizerAction*, Action)
-	SLATE_ARGUMENT(bool, IsSelected)
-	SLATE_EVENT(FOnDinoActionSelected, OnSelected)
-	SLATE_EVENT(FOnDinoActionDeleted, OnDeleted)
-	SLATE_EVENT(FOnDinoActionDuplicated, OnDuplicated) // New Argument
- SLATE_END_ARGS()
 
- void Construct(const FArguments& InArgs);
+ void Construct(const FArguments& InArgs)
+	{
+ 		SDinoListButton::Construct(InArgs);
+	}
 
-	void SetSelected(bool InSelected);
+	virtual TSharedRef<SWidget> GetButtonContent() override;
+	virtual void OnObjectSet(UObject* InObj) override;
+	
+
 
 	TWeakObjectPtr<UDinoCustomizerAction> ActionInstance = nullptr;
     
@@ -31,16 +32,11 @@ private:
 
 	FOnDinoActionSelected OnSelectedDelegate;
 	FOnDinoActionDeleted OnDeletedDelegate;
-	FOnDinoActionDuplicated OnDuplicatedDelegate; // New Member
+	FOnDinoActionDuplicated OnDuplicatedDelegate;
 
-	bool bSelected = false;
 
 	TSharedPtr<FSlateImageBrush> ActionBrush;
 	bool bHasValidBrush = false;
 
-private:
 
-	FReply OnDeleteClicked();
-	FReply OnDuplicateClicked(); // New Handler
-	FReply OnClicked();
 };

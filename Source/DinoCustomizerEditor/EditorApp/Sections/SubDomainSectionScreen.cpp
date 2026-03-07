@@ -8,6 +8,7 @@
 #include "DinoCustomizerEditor/DinoButtons/SubInstanceButton.h"
 #include "DinoCustomizerEditor/EditorClasses/DinoClassFilters.h"
 #include "DinoCustomizerEditor/EditorClasses/SDinoAddButton.h"
+#include "DinoCustomizerEditor/Helpers/DinoCustomizerEditorHelper.h"
 #include "Kismet2/SClassPickerDialog.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "Widgets/Layout/SSeparator.h"
@@ -16,6 +17,7 @@ void SSubDomainSectionScreen::Construct(const FArguments& InArgs)
 {
 	CurrentSubDomain = InArgs._SubDomain;
 	Database = InArgs._Database;
+	DomainColor = InArgs._DomainColor;
 	OnInstanceSelectedDelegate = InArgs._OnSubInstanceSelected;
 	OnInstanceDeletedDelegate = InArgs._OnSubInstanceDeleted;
 
@@ -29,6 +31,7 @@ void SSubDomainSectionScreen::Construct(const FArguments& InArgs)
 
 	// Create details view (this returns a TSharedRef)
 	DetailsView = PropertyModule.CreateDetailView(DetailsViewArgs);
+	DetailsView->SetIsPropertyVisibleDelegate(DinoHelper::MakePropertyVisibilityDelegate());
 
 	ChildSlot
 	[
@@ -123,17 +126,28 @@ void SSubDomainSectionScreen::RebuildSubInstances()
 	if (CurrentSubDomain.IsValid() == false) return;
 
 
+	int32 Index = -1;
+	
 	for (UDinoCustomizerSubAction* SubInstance : CurrentSubDomain->SubInstances)
 	{
+		Index++;
+		
 		TSharedPtr<SSubInstanceButton> Button;
 		SubDomainScrollBox->AddSlot()
 		[
 			SAssignNew(Button, SSubInstanceButton)
-			.SubInstance(SubInstance)
+			.Object(SubInstance)
+			.Height(SubInstanceButtonHeight)
+			.Color_Lambda([this](){return DomainColor.Get();})
+			.ItemIndex(Index)
+			.NumItems(CurrentSubDomain->SubInstances.Num())
 			.IsSelected(SelectedSubInstance == SubInstance)
-			.OnSelected(this,   &SSubDomainSectionScreen::OnSubInstanceSelected)
-			.OnDuplicated(this, &SSubDomainSectionScreen::OnSubInstanceDuplicated)
-			.OnDeleted(this,    &SSubDomainSectionScreen::OnSubInstanceDeleted)
+			.OnClicked(this,   &SSubDomainSectionScreen::OnSubInstanceSelected)
+			.OnDuplicateClicked(this, &SSubDomainSectionScreen::OnSubInstanceDuplicated)
+			.OnDeleteClicked(this,    &SSubDomainSectionScreen::OnSubInstanceDeleted)
+			.OnMoveDownClicked(this, &SSubDomainSectionScreen::OnSubInstanceMoveDown)
+			.OnMoveUpClicked(this, &SSubDomainSectionScreen::OnSubInstanceMoveUp)
+
 		];
 
 		SubInstanceButtons.Add(Button);
@@ -183,23 +197,52 @@ FReply SSubDomainSectionScreen::OnAddSubInstanceClicked()
 	return FReply::Unhandled();
 }
 
-void SSubDomainSectionScreen::OnSubInstanceSelected(UDinoCustomizerSubAction* DinoCustomizerSubInstance)
+void SSubDomainSectionScreen::OnSubInstanceMoveUp(UObject* InSubInstanceObj)
+{
+	UDinoCustomizerSubAction* SubInstance = Cast<UDinoCustomizerSubAction>(InSubInstanceObj);
+
+	if(CurrentSubDomain->MoveSubInstanceOrderUp(SubInstance))
+	{
+		Database->Modify();
+		RebuildSubInstances();
+		DinoHelper::MoveMouseVertical(-SubInstanceButtonHeight);
+	}
+
+}
+
+void SSubDomainSectionScreen::OnSubInstanceMoveDown(UObject* InSubInstanceObj)
+{
+	UDinoCustomizerSubAction* SubInstance = Cast<UDinoCustomizerSubAction>(InSubInstanceObj);
+
+	if(CurrentSubDomain->MoveSubInstanceOrderDown(SubInstance))
+	{
+		Database->Modify();
+		RebuildSubInstances();
+
+		DinoHelper::MoveMouseVertical(SubInstanceButtonHeight);
+
+	}
+
+}
+
+void SSubDomainSectionScreen::OnSubInstanceSelected(UObject* InSubInstanceObj)
 {
 
-	OnInstanceSelectedDelegate.Execute(DinoCustomizerSubInstance);
-	SelectedSubInstance = DinoCustomizerSubInstance;
+	SelectedSubInstance = Cast<UDinoCustomizerSubAction>(InSubInstanceObj);
+	
+	OnInstanceSelectedDelegate.Execute(SelectedSubInstance.Get());
+	
 	for (TSharedPtr<SSubInstanceButton> Button : SubInstanceButtons)
 	{
-		if (Button->SubInstance != DinoCustomizerSubInstance)
-		{
-			Button->SetIsSelected(false);
-		}
+			Button->SetSelected(Button->SubInstance == SelectedSubInstance);
 	}
 }
 
-void SSubDomainSectionScreen::OnSubInstanceDuplicated(UDinoCustomizerSubAction* DinoCustomizerSubInstance)
+void SSubDomainSectionScreen::OnSubInstanceDuplicated(UObject* InSubInstanceObj)
 {
-	if(CurrentSubDomain->DuplicateSubInstances(DinoCustomizerSubInstance))
+	UDinoCustomizerSubAction* SubInstance = Cast<UDinoCustomizerSubAction>(InSubInstanceObj);
+
+	if(CurrentSubDomain->DuplicateSubInstances(SubInstance))
 	{
 		Database->Modify();
 		RebuildSubInstances();
@@ -207,15 +250,17 @@ void SSubDomainSectionScreen::OnSubInstanceDuplicated(UDinoCustomizerSubAction* 
 
 }
 
-void SSubDomainSectionScreen::OnSubInstanceDeleted(UDinoCustomizerSubAction* DinoCustomizerSubInstance)
+void SSubDomainSectionScreen::OnSubInstanceDeleted(UObject* InSubInstanceObj)
 {
-	if(CurrentSubDomain->RemoveSubInstances(DinoCustomizerSubInstance))
+	UDinoCustomizerSubAction* SubInstance = Cast<UDinoCustomizerSubAction>(InSubInstanceObj);
+
+	if(CurrentSubDomain->RemoveSubInstances(SubInstance))
 	{
 		Database->Modify();
 		RebuildSubInstances();
-		OnInstanceDeletedDelegate.Execute(DinoCustomizerSubInstance);
+		OnInstanceDeletedDelegate.Execute(SubInstance);
 
-		if(SelectedSubInstance == DinoCustomizerSubInstance)
+		if(SelectedSubInstance == SubInstance)
 		{
 			SelectedSubInstance = nullptr;
 		}

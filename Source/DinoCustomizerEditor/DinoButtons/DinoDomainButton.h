@@ -1,60 +1,37 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "DinoListButton.h"
 #include "Widgets/SCompoundWidget.h"
 
 class UDinoCustomizerDatabaseDomain;
 
 DECLARE_DELEGATE_OneParam(FOnDinoDomainClicked, UDinoCustomizerDatabaseDomain*)
 
-class SDinoDomainButton : public SCompoundWidget
+class SDinoDomainButton : public SDinoListButton
 {
 public:
 
-	SLATE_BEGIN_ARGS(SDinoDomainButton)
-		: _Domain(nullptr)
-		, _Height(90.f)
-		, _IsSelected(false)
-	{}
-	SLATE_ARGUMENT(UDinoCustomizerDatabaseDomain*, Domain)
-	SLATE_ARGUMENT(float, Height)
-	SLATE_ARGUMENT(int32, DomainIndex)
-	SLATE_ARGUMENT(int32, NumDomains)
-	SLATE_ARGUMENT(bool, IsSelected)
 
-	SLATE_EVENT(FOnDinoDomainClicked, OnClicked)
-	SLATE_EVENT(FOnDinoDomainClicked, OnDeleteClicked)
+	void Construct(const FArguments& InArgs)
+	{
+		SDinoListButton::Construct(InArgs);
+	}
 
-
-	SLATE_EVENT(FOnDinoDomainClicked, OnMoveUpClicked)
-	SLATE_EVENT(FOnDinoDomainClicked, OnMoveDownClicked)
-
-SLATE_END_ARGS()
-
-	void Construct(const FArguments& InArgs);
-
-	void SetSelected(bool bSelected);
+	virtual TSharedRef<SWidget> GetButtonContent() override;
+	virtual void OnObjectSet(UObject* InObj) override;
+	virtual FLinearColor GetButtonColor() override;
+	
 	UDinoCustomizerDatabaseDomain* GetDomain() const { return Domain; }
 
 private:
 
-	FReply HandleClicked();
-	FReply HandleDeleteClicked();
 
-	// NEW
-	FReply HandleMoveUpClicked();
-	FReply HandleMoveDownClicked();
-
-	const FSlateBrush* GetBorderBrush() const;
 
 private:
 
 	UDinoCustomizerDatabaseDomain* Domain = nullptr;
-
-	float Height = 90.f;
-	bool bIsSelected = false;
-
-	TSharedPtr<SBorder> OuterBorder;
+	
 
 	FOnDinoDomainClicked OnClicked;
 	FOnDinoDomainClicked OnDeleteClicked;

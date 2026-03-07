@@ -6,40 +6,15 @@
 #include "DinoCustomizer/Actions/DinoCustomizerAction.h"
 #include "DinoCustomizerEditor/Helpers/DinoCustomizerEditorHelper.h"
 
-void SDinoDomainInstanceActionButton::Construct(const FArguments& InArgs)
+
+
+
+TSharedRef<SWidget> SDinoDomainInstanceActionButton::GetButtonContent()
 {
-	ActionInstance = InArgs._Action;
-	OnSelectedDelegate = InArgs._OnSelected;
-	OnDeletedDelegate = InArgs._OnDeleted;
-	OnDuplicatedDelegate = InArgs._OnDuplicated;
-	bSelected = InArgs._IsSelected;
-
-
 	FSlateFontInfo NameFont = FAppStyle::GetFontStyle("PropertyWindow.BoldFont");
 	NameFont.Size = 13;
 
-	ChildSlot
-	[
-
-		SNew(SBorder)
-		.BorderImage_Lambda([this]()
-		{
-			return bSelected
-				       ? FAppStyle::GetBrush("FocusRectangle")
-				       : FAppStyle::GetBrush("NoBorder");
-		})
-
-		[
-			SNew(SButton)
-			.ButtonStyle(FAppStyle::Get(), "Button")
-			.OnClicked(this, &SDinoDomainInstanceActionButton::OnClicked)
-			.ContentPadding(FMargin(4))
-			[
-
-				SNew(SBox)
-				.HeightOverride(35)
-				[
-					SNew(SHorizontalBox)
+	return 				SNew(SHorizontalBox)
 
 					// IMAGE SLOT
 					+ SHorizontalBox::Slot()
@@ -107,79 +82,20 @@ void SDinoDomainInstanceActionButton::Construct(const FArguments& InArgs)
 							.Text_Lambda([this]()
 							{
 								return ActionInstance.IsValid()
-									       ? FText::Format(FText::FromString("Instance Tag : {0}"), TAG_TEXT(ActionInstance->InstanceTag))
+									       ? FText::Format(FText::FromString("Instance Tag : {0}"), DinoHelper::TAG_TEXT(ActionInstance->InstanceTag))
 									       : FText::GetEmpty();
 							})
 							.ColorAndOpacity(FLinearColor(0.3f, 0.7f, 1.0f))
 						]
-					]
-
-					// NEW: DUPLICATE BUTTON
-					+ SHorizontalBox::Slot()
-					.AutoWidth()
-					.VAlign(VAlign_Center)
-					.Padding(2, 0)
-					[
-						SNew(SButton)
-						.ButtonStyle(FAppStyle::Get(), "SimpleButton")
-						.ToolTipText(FText::FromString("Duplicate this action"))
-						.OnClicked(this, &SDinoDomainInstanceActionButton::OnDuplicateClicked)
-						[
-							SNew(SImage)
-							.Image(FAppStyle::GetBrush("Icons.Duplicate"))
-							.ColorAndOpacity(FLinearColor(0.8f, 0.8f, 0.8f, 1.0f)) // Slightly dimmed until hover
-						]
-					]
-
-					// DELETE BUTTON
-					+ SHorizontalBox::Slot()
-					.AutoWidth()
-					.VAlign(VAlign_Center)
-					.Padding(2, 0)
-					[
-						SNew(SButton)
-						.ButtonStyle(FAppStyle::Get(), "SimpleButton")
-						.ToolTipText(FText::FromString("Delete this action"))
-						.OnClicked(this, &SDinoDomainInstanceActionButton::OnDeleteClicked)
-						[
-							SNew(SImage)
-							.Image(FAppStyle::GetBrush("Icons.Delete"))
-						]
-					]
-				]
-			]
-		]
-	];
-}
-
-void SDinoDomainInstanceActionButton::SetSelected(bool InSelected)
-{
-	bSelected = InSelected;
-
+					];
+	
 }
 
 
-FReply SDinoDomainInstanceActionButton::OnDuplicateClicked()
+
+void SDinoDomainInstanceActionButton::OnObjectSet(UObject* InObj)
 {
-	if (OnDuplicatedDelegate.IsBound())
-	{
-		OnDuplicatedDelegate.Execute(ActionInstance.Get());
-	}
-	return FReply::Handled();
-}
+	SDinoListButton::OnObjectSet(InObj);
 
-// ... (Existing OnClicked and OnDeleteClicked functions) ...
-
-FReply SDinoDomainInstanceActionButton::OnClicked()
-{
-	bSelected = true;
-
-	if (OnSelectedDelegate.IsBound()) { OnSelectedDelegate.Execute(ActionInstance.Get()); }
-	return FReply::Handled();
-}
-
-FReply SDinoDomainInstanceActionButton::OnDeleteClicked()
-{
-	if (OnDeletedDelegate.IsBound()) { OnDeletedDelegate.Execute(ActionInstance.Get()); }
-	return FReply::Handled();
+	ActionInstance = Cast<UDinoCustomizerAction>(InObj);
 }

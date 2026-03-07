@@ -3,8 +3,10 @@
 
 #include "DinoCustomizerHelper.h"
 
+#include "GameplayTagsManager.h"
 #include "DinoCustomizer/Actions/DinoCustomizerAction.h"
 #include "DinoCustomizer/Data/DinoCustomizationAppearence.h"
+#include "DinoCustomizer/Tags/DinoCustomizerTags.h"
 
 UDinoCustomizerAction* UDinoCustomizerHelper::GetCustomizationInstanceDataFromDatabase(
 	UDinoCustomizerDatabase* InDatabase, FGameplayTag Domain, FGameplayTag InstanceTag)
@@ -50,7 +52,15 @@ FDinoCustomizationAppearance UDinoCustomizerHelper::GenerateRandomCustomizationA
 	{
 		if(UDinoCustomizerAction* RandomInstance = Domain->GetRandomInstance())
 		{
-			AppearanceData.AddOrUpdateDomainData(Domain->DomainTag, RandomInstance->InstanceTag);
+			TMap<FGameplayTag, FGameplayTag> SubDomains;
+			for(UDinoCustomizerSubDomain* SubDomain : RandomInstance->SubDomains)
+			{
+				if(UDinoCustomizerSubAction* RandomSubInstance = SubDomain->GetRandomSubInstance())
+				{
+					SubDomains.Add(SubDomain->SubDomainTag, RandomSubInstance->SubInstanceTag);
+				}
+			}
+			AppearanceData.AddOrUpdateDomainData(Domain->DomainTag, RandomInstance->InstanceTag, SubDomains);
 		}
 	}
 	
@@ -87,6 +97,37 @@ FGameplayTag UDinoCustomizerHelper::GetAppearanceSubDomainInstance(
 					}
 				}
 			
+		}
+	}
+
+	return FGameplayTag::EmptyTag;
+}
+
+FGameplayTag UDinoCustomizerHelper::GetNextUnUsedCustomizableInstanceTag(const FGameplayTagContainer& UsedTags)
+{
+
+	FGameplayTagContainer CustomizableInstanceTags =  UGameplayTagsManager::Get().RequestGameplayTagChildren(DinoCustomizationTags::CustomizableInstance_Root);
+
+	for(FGameplayTag Tag : CustomizableInstanceTags)
+	{
+		if(UsedTags.HasTagExact(Tag) == false)
+		{
+			return Tag;
+		}
+	}
+
+	return FGameplayTag::EmptyTag;
+}
+
+FGameplayTag UDinoCustomizerHelper::GetNextUnUsedCustomizableSubInstanceTag(const FGameplayTagContainer& UsedTags)
+{
+	FGameplayTagContainer CustomizableInstanceTags =  UGameplayTagsManager::Get().RequestGameplayTagChildren(DinoCustomizationTags::CustomizableSubInstance_Root);
+
+	for(FGameplayTag Tag : CustomizableInstanceTags)
+	{
+		if(UsedTags.HasTagExact(Tag) == false)
+		{
+			return Tag;
 		}
 	}
 

@@ -27,7 +27,7 @@ private:
 	TWeakObjectPtr<UDinoCustomizerDatabase> Database;
 
 	// currently Selected and we are Editing
-	TWeakObjectPtr<UDinoCustomizerDatabaseDomain> SelectedDomain    = nullptr;
+	TWeakObjectPtr<UDinoCustomizerDatabaseDomain>   SelectedDomain    = nullptr;
 	TWeakObjectPtr<UDinoCustomizerAction>           SelectedInstance  = nullptr;
 	TWeakObjectPtr<UDinoCustomizerSubDomain>        SelectedSubDomain = nullptr;
 	TWeakObjectPtr<UDinoCustomizerSubAction>        SelectedSubInstance = nullptr;

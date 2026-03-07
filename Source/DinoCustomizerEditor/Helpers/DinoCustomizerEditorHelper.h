@@ -5,16 +5,28 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 
-
-
-FText TAG_TEXT(const FGameplayTag& InTag, bool bShowParent = false);
-
-
-static void MoveMouseVertical(float Amount)
+namespace DinoHelper
 {
-	FVector2D MousePos = FSlateApplication::Get().GetCursorPos();
+	FText TAG_TEXT(const FGameplayTag& InTag, bool bShowParent = false);
 
-	MousePos.Y += Amount;
 
-	FSlateApplication::Get().SetCursorPos(MousePos);
+	static void MoveMouseVertical(float Amount)
+	{
+		FVector2D MousePos = FSlateApplication::Get().GetCursorPos();
+
+		MousePos.Y += Amount;
+
+		FSlateApplication::Get().SetCursorPos(MousePos);
+	}
+
+	static FIsPropertyVisible MakePropertyVisibilityDelegate()
+	{
+		return FIsPropertyVisible::CreateLambda([](const FPropertyAndParent& PropertyAndParent)
+		{
+			const FProperty& Prop = PropertyAndParent.Property;
+
+			return Prop.HasAnyPropertyFlags(CPF_Edit) &&
+				!Prop.HasAnyPropertyFlags(CPF_DisableEditOnInstance);
+		});
+	}
 }

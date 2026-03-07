@@ -82,10 +82,10 @@ void SDomainSectionScreen::RebuildDomainsUI()
 		DomainsScrollBox->AddSlot()
 		[
 			SAssignNew(Button, SDinoDomainButton)
-			.Domain(Domain)
+			.Object(Domain)
 			.Height(DomainButtonHeight)
-			.DomainIndex(Index)
-			.NumDomains(Database->Domains.Num())
+			.ItemIndex(Index)
+			.NumItems(Database->Domains.Num())
 			.IsSelected(
 				SelectedDomain
 				? SelectedDomain->GetDomainId() == Domain->GetDomainId()
@@ -94,26 +94,12 @@ void SDomainSectionScreen::RebuildDomainsUI()
 			.OnDeleteClicked(this,&SDomainSectionScreen::HandleDomainDeleted)
 			.OnMoveUpClicked(this, &SDomainSectionScreen::MoveDomainOrderUp)
 			.OnMoveDownClicked(this, &SDomainSectionScreen::MoveDomainOrderDown)
+			.OnDuplicateClicked(this, &SDomainSectionScreen::HandleDomainDuplicated)
 		];
 
 		DomainButtons.Add(Button);
 	}
 
-	DomainsScrollBox->AddSlot()
-[
-	SNew(SDinoListButton)
-	.Height(90)
-	.ItemIndex(1)
-	.NumItems(3)
-];
-
-	DomainsScrollBox->AddSlot()
-[
-SNew(SDinoListButton)
-.Height(65)
-.ItemIndex(1)
-.NumItems(3)
-];
 }
 
 FReply SDomainSectionScreen::OnAddDomainClicked()
@@ -136,9 +122,9 @@ FReply SDomainSectionScreen::OnAddDomainClicked()
 	return FReply::Handled();
 }
 
-void SDomainSectionScreen::HandleDomainSelected(UDinoCustomizerDatabaseDomain* Domain)
+void SDomainSectionScreen::HandleDomainSelected(UObject* InDomainObj)
 {
-	SelectedDomain = Domain;
+	SelectedDomain = Cast<UDinoCustomizerDatabaseDomain>(InDomainObj);
 
 	if (OnDomainSelectedDelegate.IsBound())
 	{
@@ -158,8 +144,22 @@ void SDomainSectionScreen::HandleDomainSelected(UDinoCustomizerDatabaseDomain* D
 
 }
 
-void SDomainSectionScreen::HandleDomainDeleted(UDinoCustomizerDatabaseDomain* Domain)
+void SDomainSectionScreen::HandleDomainDuplicated(UObject* InDomainObj)
 {
+	UDinoCustomizerDatabaseDomain* Domain = Cast<UDinoCustomizerDatabaseDomain>(InDomainObj);
+
+	if(Database->DuplicateDatabaseDomain(Domain))
+	{
+		Database->Modify();
+		RebuildDomainsUI();
+	}
+	
+}
+
+void SDomainSectionScreen::HandleDomainDeleted(UObject* InDomainObj)
+{
+
+	UDinoCustomizerDatabaseDomain* Domain = Cast<UDinoCustomizerDatabaseDomain>(InDomainObj);
 
 	if(Database->RemoveDatabaseDomain(Domain))
 	{
@@ -177,25 +177,29 @@ void SDomainSectionScreen::HandleDomainDeleted(UDinoCustomizerDatabaseDomain* Do
 	
 }
 
-void SDomainSectionScreen::MoveDomainOrderUp(UDinoCustomizerDatabaseDomain* DinoCustomizerDatabaseDomain)
+void SDomainSectionScreen::MoveDomainOrderUp(UObject* InDomainObj)
 {
-	if(Database->MoveDomainOrderUp(DinoCustomizerDatabaseDomain))
+	UDinoCustomizerDatabaseDomain* Domain = Cast<UDinoCustomizerDatabaseDomain>(InDomainObj);
+
+	if(Database->MoveDomainOrderUp(Domain))
 	{
 		Database->Modify();
 		RebuildDomainsUI();
 
-		MoveMouseVertical(-DomainButtonHeight);
+		DinoHelper::MoveMouseVertical(-DomainButtonHeight);
 
 	}
 }
 
-void SDomainSectionScreen::MoveDomainOrderDown(UDinoCustomizerDatabaseDomain* DinoCustomizerDatabaseDomain)
+void SDomainSectionScreen::MoveDomainOrderDown(UObject* InDomainObj)
 {
-	if(Database->MoveDomainOrderDown(DinoCustomizerDatabaseDomain))
+	UDinoCustomizerDatabaseDomain* Domain = Cast<UDinoCustomizerDatabaseDomain>(InDomainObj);
+
+	if(Database->MoveDomainOrderDown(Domain))
 	{
 		Database->Modify();
 		RebuildDomainsUI();
 
-		MoveMouseVertical(DomainButtonHeight);
+		DinoHelper::MoveMouseVertical(DomainButtonHeight);
 	}
 }

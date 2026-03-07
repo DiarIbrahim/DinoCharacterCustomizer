@@ -30,14 +30,18 @@ void Construct(const FArguments& InArgs);
 
 	void SetDomain(UDinoCustomizerDatabaseDomain* InDomain);
 	void SetDatabase(UDinoCustomizerDatabase* InDatabase);
+
 	void RebuildDomainContentWindow(); // Explicit rebuild allowed
 
-private:
-	void OnInstanceDeleted(UDinoCustomizerAction* DinoCustomizerAction);
-	void OnInstanceDuplicated(UDinoCustomizerAction* DinoCustomizerAction);
+	float InstanceButtonHeight = 65.0f;
 
+private:
+	void OnInstanceDeleted(UObject* InInstanceObj);
+	void OnInstanceDuplicated(UObject* InInstanceObj);
+	void HandleInstanceMoveDown(UObject* InInstanceObj);
+	void HandleInstanceMoveUp(UObject* InInstanceObj);
+	void HandleInstanceSelected(UObject* InInstanceObj);
 	FReply OnAddInstanceClicked();
-	void HandleInstanceSelected(UDinoCustomizerAction* Instance);
 	
 	// Data
 	TWeakObjectPtr<UDinoCustomizerDatabase> Database;

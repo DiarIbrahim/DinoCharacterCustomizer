@@ -115,7 +115,8 @@ void SDinoCustomizerDatabaseEditorScreen::Construct(const FArguments& InArgs)
 				// DetailsView.ToSharedRef()
 				SAssignNew(InstanceSettingsScreen, SInstanceSettingsScreen)
 				.Database(Database)
-				.Action(nullptr)
+				.Action(SelectedInstance)
+				.DomainColor_Lambda([this](){return SelectedDomain.IsValid() ? SelectedDomain->DomainColor : FLinearColor::White;})
 				.OnSubDomainSelected(this, &SDinoCustomizerDatabaseEditorScreen::OnSubDomainSelected)
 				.OnSubDomainDeleted(this, &SDinoCustomizerDatabaseEditorScreen::OnSubDomainDeleted)
 			]
@@ -146,6 +147,7 @@ void SDinoCustomizerDatabaseEditorScreen::Construct(const FArguments& InArgs)
 			[
 				SAssignNew(SubDomainSectionScreen, SSubDomainSectionScreen)
 				.Database(Database)
+				.DomainColor_Lambda([this](){ return SelectedDomain.IsValid() ? SelectedDomain->DomainColor : FLinearColor::White;})
 				.SubDomain(SelectedSubDomain)
 				.OnSubInstanceSelected(this, &SDinoCustomizerDatabaseEditorScreen::OnSubInstanceSelected)
 				.OnSubInstanceDeleted(this, &SDinoCustomizerDatabaseEditorScreen::OnSubInstanceDeleted)
@@ -190,6 +192,10 @@ void SDinoCustomizerDatabaseEditorScreen::OnDomainsSelected(UDinoCustomizerDatab
 {
 	if(Domain != SelectedDomain)
 	{
+		SelectedInstance = nullptr;
+		SelectedSubDomain = nullptr;
+		SelectedSubInstance = nullptr;
+		
 		DomainContentScreen->SetDomain(Domain);
 		InstanceSettingsScreen->SetInstance(nullptr);
 		SubDomainSectionScreen->SetSubDomain(nullptr);
@@ -203,6 +209,11 @@ void SDinoCustomizerDatabaseEditorScreen::OnDomainDeleted( UDinoCustomizerDataba
 	
 	if(DinoCustomizableDatabaseDomain == SelectedDomain)
 	{
+		SelectedDomain = nullptr;
+		SelectedInstance = nullptr;
+		SelectedSubDomain = nullptr;
+		SelectedSubInstance = nullptr;
+		
 		DomainContentScreen->SetDomain(nullptr);
 		InstanceSettingsScreen->SetInstance(nullptr);
 		SubDomainSectionScreen->SetSubDomain(nullptr);
@@ -214,6 +225,9 @@ void SDinoCustomizerDatabaseEditorScreen::OnDomainInstanceSelected(UDinoCustomiz
 {
 	if(DinoCustomizerAction != SelectedInstance)
 	{
+		SelectedSubDomain = nullptr;
+		SelectedSubInstance = nullptr;
+		
 		InstanceSettingsScreen->SetInstance(DinoCustomizerAction);
 		SubDomainSectionScreen->SetSubDomain(nullptr);
 		SubInstanceSectionScreen->SetSubInstance(nullptr);
@@ -225,6 +239,10 @@ void SDinoCustomizerDatabaseEditorScreen::OnDomainInstanceDeleted(UDinoCustomize
 {
 	if(SelectedInstance == DinoCustomizerAction)
 	{
+		SelectedInstance = nullptr;
+		SelectedSubDomain = nullptr;
+		SelectedSubInstance = nullptr;
+		
 		InstanceSettingsScreen->SetInstance(nullptr);
 		SubDomainSectionScreen->SetSubDomain(nullptr);
 		SubInstanceSectionScreen->SetSubInstance(nullptr);
@@ -235,6 +253,9 @@ void SDinoCustomizerDatabaseEditorScreen::OnSubDomainSelected(UDinoCustomizerSub
 {
 	if(SubDomain != SelectedSubDomain)
 	{
+
+		SelectedSubInstance = nullptr;
+		
 		SubDomainSectionScreen->SetSubDomain(SubDomain);
 		SubInstanceSectionScreen->SetSubInstance(nullptr);
 		SelectedSubDomain = SubDomain;
@@ -246,6 +267,9 @@ void SDinoCustomizerDatabaseEditorScreen::OnSubDomainDeleted(UDinoCustomizerSubD
 {
 	if(DinoCustomizerSubDomain == SelectedSubDomain)
 	{
+		SelectedSubDomain = nullptr;
+		SelectedSubInstance = nullptr;
+
 		SubDomainSectionScreen->SetSubDomain(nullptr);
 		SubInstanceSectionScreen->SetSubInstance(nullptr);
 	}

@@ -6,40 +6,55 @@
 #include "DinoCustomizer/Actions/DinoCustomizerAction.h"
 #include "DinoCustomizerEditor/Helpers/DinoCustomizerEditorHelper.h"
 
-void SInstanceSubDomainButton::Construct(const FArguments& InArgs)
-{
-	InstanceSubDomain = InArgs._SubDomain;
-	OnSelectedDelegate = InArgs._OnSelected;
-	OnDeletedDelegate = InArgs._OnDeleted;
-	OnDuplicatedDelegate = InArgs._OnDuplicated;
-	bSelected = InArgs._IsSelected;
 
+TSharedRef<SWidget> SInstanceSubDomainButton::GetButtonContent()
+{
 	FSlateFontInfo NameFont = FAppStyle::GetFontStyle("PropertyWindow.BoldFont");
 	NameFont.Size = 13;
 
-	ChildSlot
-	[
+	return 				SNew(SHorizontalBox)
 
-		SNew(SBorder)
-		.BorderImage_Lambda([this]()
-		{
-			return bSelected
-				       ? FAppStyle::GetBrush("FocusRectangle")
-				       : FAppStyle::GetBrush("NoBorder");
-		})
+					// IMAGE SLOT
+					+ SHorizontalBox::Slot()
+					.AutoWidth()
+					.VAlign(VAlign_Center)
+					[
+						SNew(SBox)
+						.WidthOverride(35)
+						.HeightOverride(35)
+						[
+							SNew(SImage)
+							.Visibility_Lambda([this]()
+							{
+								return InstanceSubDomain.IsValid() && InstanceSubDomain->SubDomainDisplayImage.IsValid()
+									       ? EVisibility::Visible
+									       : EVisibility::Hidden;
+							})
+							.Image_Lambda([this]() -> const FSlateBrush* {
+								if (InstanceSubDomain.IsValid() && !InstanceSubDomain->SubDomainDisplayImage.IsNull())
+								{
+									UTexture2D* CurrentTexture = InstanceSubDomain->SubDomainDisplayImage.Get();
+									if (!CurrentTexture)
+									{
+										CurrentTexture = InstanceSubDomain->SubDomainDisplayImage.LoadSynchronous();
+									}
 
-		[
-			SNew(SButton)
-			.ButtonStyle(FAppStyle::Get(), "Button")
-			.OnClicked(this, &SInstanceSubDomainButton::OnClicked)
-			.ContentPadding(FMargin(4))
-			[
+									if (CurrentTexture)
+									{
+										if (!ActionBrush.IsValid() || ActionBrush->GetResourceObject() !=
+											CurrentTexture)
+										{
+											ActionBrush = MakeShared<FSlateImageBrush>(
+												CurrentTexture, FVector2D(32, 32));
+										}
+										return ActionBrush.Get();
+									}
+								}
+								return FAppStyle::GetBrush("Default");
+							})
+						]
+					]
 
-				SNew(SBox)
-				.HeightOverride(35)
-				[
-					SNew(SHorizontalBox)
-					
 					// TEXT SLOT
 					+ SHorizontalBox::Slot()
 					.FillWidth(1.f)
@@ -65,78 +80,20 @@ void SInstanceSubDomainButton::Construct(const FArguments& InArgs)
 							.Text_Lambda([this]()
 							{
 								return InstanceSubDomain.IsValid()
-									       ? FText::Format(FText::FromString("Sub Domain Tag : {0}"),TAG_TEXT(InstanceSubDomain->SubDomainTag))
+									       ? FText::Format(FText::FromString("SubDomain Tag : {0}"), DinoHelper::TAG_TEXT(InstanceSubDomain->SubDomainTag))
 									       : FText::GetEmpty();
 							})
 							.ColorAndOpacity(FLinearColor(0.3f, 0.7f, 1.0f))
 						]
-					]
-
-					// NEW: DUPLICATE BUTTON
-					+ SHorizontalBox::Slot()
-					.AutoWidth()
-					.VAlign(VAlign_Center)
-					.Padding(2, 0)
-					[
-						SNew(SButton)
-						.ButtonStyle(FAppStyle::Get(), "SimpleButton")
-						.ToolTipText(FText::FromString("Duplicate this action"))
-						.OnClicked(this, &SInstanceSubDomainButton::OnDuplicateClicked)
-						[
-							SNew(SImage)
-							.Image(FAppStyle::GetBrush("Icons.Duplicate"))
-							.ColorAndOpacity(FLinearColor(0.8f, 0.8f, 0.8f, 1.0f)) // Slightly dimmed until hover
-						]
-					]
-
-					// DELETE BUTTON
-					+ SHorizontalBox::Slot()
-					.AutoWidth()
-					.VAlign(VAlign_Center)
-					.Padding(2, 0)
-					[
-						SNew(SButton)
-						.ButtonStyle(FAppStyle::Get(), "SimpleButton")
-						.ToolTipText(FText::FromString("Delete this action"))
-						.OnClicked(this, &SInstanceSubDomainButton::OnDeleteClicked)
-						[
-							SNew(SImage)
-							.Image(FAppStyle::GetBrush("Icons.Delete"))
-						]
-					]
-				]
-			]
-		]
-	];
-}
-
-void SInstanceSubDomainButton::SetIsSelected(bool InSelected)
-{
-	bSelected = InSelected;
+					];
+	
 }
 
 
-FReply SInstanceSubDomainButton::OnDuplicateClicked()
+
+void SInstanceSubDomainButton::OnObjectSet(UObject* InObj)
 {
-	if (OnDuplicatedDelegate.IsBound())
-	{
-		OnDuplicatedDelegate.Execute(InstanceSubDomain.Get());
-	}
-	return FReply::Handled();
-}
+	SDinoListButton::OnObjectSet(InObj);
 
-// ... (Existing OnClicked and OnDeleteClicked functions) ...
-
-FReply SInstanceSubDomainButton::OnClicked()
-{
-	bSelected = true;
-
-	if (OnSelectedDelegate.IsBound()) { OnSelectedDelegate.Execute(InstanceSubDomain.Get()); }
-	return FReply::Handled();
-}
-
-FReply SInstanceSubDomainButton::OnDeleteClicked()
-{
-	if (OnDeletedDelegate.IsBound()) { OnDeletedDelegate.Execute(InstanceSubDomain.Get()); }
-	return FReply::Handled();
+	InstanceSubDomain = Cast<UDinoCustomizerSubDomain>(InObj);
 }
