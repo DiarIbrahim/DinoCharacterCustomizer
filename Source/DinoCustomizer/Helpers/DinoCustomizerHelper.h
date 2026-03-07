@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DinoCustomizer/Data/DinoCustomizerDatabase.h"
 
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "DinoCustomizerHelper.generated.h"
@@ -24,13 +25,8 @@ public:
 	 *  e.g. to get jacket (the instance tag) for the upperbody (the domain tag) in side the database 
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dino Customizer")
-	static UDinoCustomizerAction* GetCustomizationInstanceDataFromDatabase(UDinoCustomizationDataBase* InDatabase, FGameplayTag Domain, FGameplayTag InstanceTag);
+	static UDinoCustomizerAction* GetCustomizationInstanceDataFromDatabase(UDinoCustomizerDatabase* InDatabase, FGameplayTag Domain, FGameplayTag InstanceTag);
 
-	/*
-	 *   -- loads a character appearance data as a map of Domains and instance data (not used but may be helpful )
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Dino Customizer")
-	static  TMap<FGameplayTag, UDinoCustomizerAction*> LoadCharacterAppearanceData(UDinoCustomizationDataBase* InDatabase,const FDinoCustomizationAppearance& CharacterAppearance);
 
 	/*
 	 *  generate a minimal character appearance from the provided data base
@@ -38,19 +34,26 @@ public:
 	 *  Use GenerateMinimalCharacterAppearanceFromDataBaseByCharacter if you want to only get domains provided by the character (the character must implement IDinoCustomizableCharacterInterface)
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dino Customizer")
-	static FDinoCustomizationAppearance GenerateMinimalCustomizationAppearanceFromDatabase(UDinoCustomizationDataBase* InDatabase);
+	static FDinoCustomizationAppearance GenerateMinimalCustomizationAppearanceFromDatabase(UDinoCustomizerDatabase* InDatabase);
 	
 	/*
 	 *  Generates a random character appearance data from the database
 	 *  will generate an instance data for each domain in the database regardless of the character
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Dino Customizer")
-	static FDinoCustomizationAppearance GenerateRandomCustomizationAppearanceFromDatabase(UDinoCustomizationDataBase* InDatabase);
+	static FDinoCustomizationAppearance GenerateRandomCustomizationAppearanceFromDatabase(UDinoCustomizerDatabase* InDatabase, bool bSelectRandomForEachSubDomainForAllDomains = true);
 	
 	/*
 	 *  returns an instance tag on a specific domain inside a character appearance
 	 */
 	UFUNCTION(BlueprintPure, Category = "Dino Customizer")
 	static FGameplayTag GetAppearanceDomainInstance(const FDinoCustomizationAppearance& CharacterAppearance, FGameplayTag DomainTag);
+
+	/*
+ *  returns an instance tag on a specific domain inside a character appearance
+ */
+	UFUNCTION(BlueprintPure, Category = "Dino Customizer")
+	static FGameplayTag GetAppearanceSubDomainInstance(const FDinoCustomizationAppearance& CharacterAppearance, FGameplayTag DomainTag, FGameplayTag SubDomainTag);
+	
 	
 };

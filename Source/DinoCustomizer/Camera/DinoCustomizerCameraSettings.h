@@ -9,21 +9,21 @@ USTRUCT(BlueprintType)
 struct FDinoCustomizerCameraSettings
 {
 	GENERATED_BODY()
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float DistanceToTarget = 300;
+	float DistanceToTarget = 260;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName CharacterSocketAsTarget = NAME_None;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector TargetOffset = FVector(0.0f,0.0f,80);
+	FVector TargetOffset = FVector(0.0f,0.0f,100.0f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FRotator RotationOffset = FRotator::ZeroRotator;
+	FRotator RotationOffset = FRotator(-10.f,0.f,0.f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float LerpSpeed = 10.0f;
+	float LerpSpeed = 4.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ClampMin = 5, UIMin = 5, ClampMax= 170,UIMax=170))
 	float FOV  = 90.0f;

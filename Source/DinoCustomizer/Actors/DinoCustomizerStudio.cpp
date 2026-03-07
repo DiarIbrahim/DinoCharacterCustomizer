@@ -6,6 +6,7 @@
 #include "Components/ArrowComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "DinoCustomizer/Actions/DinoCustomizerAction.h"
+#include "DinoCustomizer/Data/DinoCustomizerDatabase.h"
 #include "DinoCustomizer/Helpers/DinoCustomizerHelper.h"
 #include "DinoCustomizer/Interfaces/DinoCustomizableActorInterface.h"
 #include "GameFramework/Character.h"
@@ -39,10 +40,7 @@ ADinoCustomizerStudio::ADinoCustomizerStudio()
 	SpringArm->SetRelativeLocation(FVector(0, 0, 80));
 
 
-	DefaultCameraSettings.DistanceToTarget = 260.0f;
-	DefaultCameraSettings.LerpSpeed = 3;
-	DefaultCameraSettings.RotationOffset = FRotator(0.f,-10.0f, 0.f);
-	DefaultCameraSettings.TargetOffset = FVector(0.f, 0.f, 100.0f);
+
 }
 
 // Called when the game starts or when spawned
@@ -126,13 +124,15 @@ void ADinoCustomizerStudio::OnConstruction(const FTransform& Transform)
 
 void ADinoCustomizerStudio::ApplyCustomizationAppearance(const FDinoCustomizationAppearance& AppearanceData)
 {
-	for(const auto& Pair : AppearanceData.GetDomainsAsMap())
+	for(const FDinoCustomizationAppearanceDomainData& DomainData : AppearanceData.Domains)
 	{
-		const FGameplayTag Domain = Pair.Key;
-		const FGameplayTag InstanceTag = Pair.Value;
+
+
+		const FGameplayTag Domain = DomainData.DomainTag;
+		const FGameplayTag InstanceTag = DomainData.InstanceTag;
 		if(UDinoCustomizerAction* Action =  UDinoCustomizerHelper::GetCustomizationInstanceDataFromDatabase(CurrentCustomizationDataBase, Domain, InstanceTag))
 		{
-			ApplyCustomizationActionToDomain(Domain, Action);
+			ApplyCustomizationActionToDomain(Domain, Action, DomainData.GetSubDomainsAsMap());
 		}
 	}
 }
@@ -149,16 +149,16 @@ void ADinoCustomizerStudio::ApplyDefaultCameraSettings()
 	TargetCameraSettings = DefaultCameraSettings;
 }
 
-bool ADinoCustomizerStudio::InitializeCustomizationFromDatabase(UDinoCustomizationDataBase* InCustomizationDatabase, bool bApplyMinimalAppearanceFromDataBase)
+bool ADinoCustomizerStudio::InitializeCustomizationFromDatabase(UDinoCustomizerDatabase* InDatabase, bool bApplyMinimalAppearanceFromDataBase)
 {
 
-	if(IsValid(InCustomizationDatabase) == false ||  InCustomizationDatabase->CustomizableActorClass.IsNull() || InCustomizationDatabase->CustomizableDomains.IsEmpty()) return false;
+	if(IsValid(InDatabase) == false ||  IsValid(InDatabase->CustomizableActorClass) == false || InDatabase->Domains.IsEmpty()) return false;
 
-	TSubclassOf<AActor> CustomizableActorClass = InCustomizationDatabase->CustomizableActorClass.LoadSynchronous();
+	TSubclassOf<AActor> CustomizableActorClass = InDatabase->CustomizableActorClass;
 	
 	if(IsCustomizableClassAllowed(CustomizableActorClass) == false) return false;
 
-	CurrentCustomizationDataBase = InCustomizationDatabase;
+	CurrentCustomizationDataBase = InDatabase;
 
 	FTransform SpawnTransform = CharacterPlacementLocation->GetComponentTransform();
 	SpawnTransform.SetScale3D(FVector(1.0f));
@@ -168,12 +168,12 @@ bool ADinoCustomizerStudio::InitializeCustomizationFromDatabase(UDinoCustomizati
 	Rot.Yaw = CharacterDirection->GetComponentRotation().Yaw;
 
 	// apply DB Rotation offset
-	FQuat RotWithDBOffset = SpawnTransform.GetRotation() * CurrentCustomizationDataBase->RotationOffsetInStudio.Quaternion();
+	FQuat RotWithDBOffset = SpawnTransform.GetRotation() * CurrentCustomizationDataBase->ActorPlacementRotationOffset.Quaternion();
 	SpawnTransform.SetRotation(RotWithDBOffset);
 
 	// apply DB location offset
 	FVector LocDBOffset = SpawnTransform.GetLocation();
-	LocDBOffset += CurrentCustomizationDataBase->StudioOffsetInStudio;
+	LocDBOffset += CurrentCustomizationDataBase->ActorPlacementLocationOffset;
 	SpawnTransform.SetLocation(LocDBOffset);
 	
 
@@ -220,7 +220,7 @@ bool ADinoCustomizerStudio::IsCustomizableClassAllowed(TSubclassOf<AActor> InAct
 
 
 
-void ADinoCustomizerStudio::ApplyCustomizationActionToDomain(const FGameplayTag& Domain, UDinoCustomizerAction* Action)
+void ADinoCustomizerStudio::ApplyCustomizationActionToDomain(const FGameplayTag& Domain, UDinoCustomizerAction* Action, TMap<FGameplayTag,FGameplayTag> SubDomains)
 {
 	if(CurrentCustomizableDomains.Contains(Domain) == false) return;
 	
@@ -234,16 +234,21 @@ void ADinoCustomizerStudio::ApplyCustomizationActionToDomain(const FGameplayTag&
 		ActionData.TargetActor = CurrentCustomizableActor;
 		ActionData.TargetDomainTag = Domain;
 		ActionData.TargetDomainObject = DomainObject;
-		
+		ActionData.ActiveSubDomains = SubDomains;
+
 		Action->InitAction(ActionData);
 	}
 		
 }
 
-void ADinoCustomizerStudio::CommitCustomizationActionOnDomain(const FGameplayTag& DomainTag,
-	const FGameplayTag& InstanceTag)
+void ADinoCustomizerStudio::ApplyCustomizationActionToDomainNoSubDomain(const FGameplayTag& Domain, UDinoCustomizerAction* Action)
 {
-	CurrentCustomizationAppearance.AddOrUpdateDomainData(DomainTag, InstanceTag);
+	ApplyCustomizationActionToDomain(Domain, Action, {});
+}
+
+void ADinoCustomizerStudio::CommitCustomizationActionOnDomain(const FGameplayTag& DomainTag,const FGameplayTag& InstanceTag, const TMap<FGameplayTag, FGameplayTag>& SubDomains)
+{
+	CurrentCustomizationAppearance.AddOrUpdateDomainData(DomainTag, InstanceTag, SubDomains);
 }
 
 

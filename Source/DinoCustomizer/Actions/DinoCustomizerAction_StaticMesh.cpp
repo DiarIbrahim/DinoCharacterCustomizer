@@ -3,6 +3,12 @@
 
 #include "DinoCustomizerAction_StaticMesh.h"
 
+UDinoCustomizerAction_StaticMesh::UDinoCustomizerAction_StaticMesh()
+{
+	ActionDisplayName = FText::FromString("Set Static mesh");
+
+}
+
 void UDinoCustomizerAction_StaticMesh::OnActionStarted_Implementation(
 	const FDinoCustomizerActionActivationData& ActivationData)
 {
@@ -10,10 +16,25 @@ void UDinoCustomizerAction_StaticMesh::OnActionStarted_Implementation(
 
 	if(UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(ActivationData.TargetDomainObject))
 	{
-		MeshComponent->SetStaticMesh(StaticMesh);
+		UStaticMesh* MeshAsset = StaticMesh.LoadSynchronous();
+		
+		MeshComponent->SetStaticMesh(MeshAsset);
 
+		// Clear any existing material overrides
+		MeshComponent->EmptyOverrideMaterials();
+
+		// apply new ones
+		const int32 NumMaterials = StaticMesh->GetStaticMaterials().Num();
+		for (int32 i = 0; i < NumMaterials; ++i)
+		{
+			UMaterialInterface* Mat = MeshAsset->GetMaterial(i);
+			MeshComponent->SetMaterial(i, Mat);
+		}
+
+		
 		CommitAction();
 
 	}
 }
+
 

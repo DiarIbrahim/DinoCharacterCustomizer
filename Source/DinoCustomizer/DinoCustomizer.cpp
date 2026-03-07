@@ -1,8 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "DinoCharacterCustomizer.h"
+#include "DinoCustomizer.h"
 
-#define LOCTEXT_NAMESPACE "FDinoCharacterCustomizerModule"
+#define LOCTEXT_NAMESPACE "FDinoCustomizerModule"
 
 void FDinoCustomizerModule::StartupModule()
 {
@@ -17,4 +17,4 @@ void FDinoCustomizerModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FDinoCustomizerModule, DinoCharacterCustomizer)
+IMPLEMENT_MODULE(FDinoCustomizerModule, DinoCustomizer)

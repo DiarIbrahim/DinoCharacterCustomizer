@@ -10,9 +10,9 @@
 
 
 
-// This class does not need to be modified.
+// This class does not need to be modified. 
 UINTERFACE()
-class UDinoCustomizableActorInterface : public UInterface
+class DINOCUSTOMIZER_API UDinoCustomizableActorInterface : public UInterface
 {
 	GENERATED_BODY()
 };

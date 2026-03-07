@@ -50,6 +50,14 @@ struct  FDinoCustomizationAppearanceDomainData : public FFastArraySerializerItem
 
 	FDinoCustomizationAppearanceDomainData(){}
 	FDinoCustomizationAppearanceDomainData(FGameplayTag InDomainTag, FGameplayTag InInstanceTag):DomainTag(InDomainTag), InstanceTag(InInstanceTag){}
+	FDinoCustomizationAppearanceDomainData(FGameplayTag InDomainTag, FGameplayTag InInstanceTag, TMap<FGameplayTag, FGameplayTag> InSubDomains):DomainTag(InDomainTag), InstanceTag(InInstanceTag)
+	{
+		for(const auto& Pair : InSubDomains)
+		{
+			SubDomains.Add(FDinoCustomizationAppearanceSubDomainData(Pair.Key, Pair.Value));
+		}
+	}
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGameplayTag DomainTag;
@@ -59,8 +67,37 @@ struct  FDinoCustomizationAppearanceDomainData : public FFastArraySerializerItem
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGameplayTag InstanceMaterialTag;
+	TArray<FDinoCustomizationAppearanceSubDomainData> SubDomains;
+
+	bool AddOrUpdateSubDomain(FGameplayTag InSubDomainTag, FGameplayTag InSubInstanceTag)
+	{
+		if(InSubDomainTag.IsValid() == false || InSubInstanceTag.IsValid() == false) return false;
+		
+		for (FDinoCustomizationAppearanceSubDomainData& SubDomain : SubDomains)
+		{
+			if(SubDomain.SubDomainTag == InSubDomainTag)
+			{
+				SubDomain.SubInstanceTag = InSubInstanceTag;
+				return true;
+			}
+		}
+		
+		SubDomains.Add(FDinoCustomizationAppearanceSubDomainData(InSubDomainTag, InSubInstanceTag));
+		return true;
+			
+	}
+
 	
+	TMap<FGameplayTag, FGameplayTag> GetSubDomainsAsMap() const
+	{
+		TMap<FGameplayTag, FGameplayTag> SubDomainsMap;
+		for(const FDinoCustomizationAppearanceSubDomainData& SubDomain : SubDomains)
+		{
+			SubDomainsMap.Add(SubDomain.SubDomainTag, SubDomain.SubInstanceTag);
+		}
+
+		return SubDomainsMap;
+	}
 	
 };
 
@@ -77,7 +114,7 @@ struct FDinoCustomizationAppearance : public FFastArraySerializer
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FDinoCustomizationAppearanceDomainData> Domains;
 	
-	bool AddOrUpdateDomainData(FGameplayTag DomainTag, FGameplayTag InstanceTag)
+	bool AddOrUpdateDomainData(FGameplayTag DomainTag, FGameplayTag InstanceTag, TMap<FGameplayTag,FGameplayTag> SubDomains = {})
 	{
 		if(DomainTag.IsValid() == false) return false;
 		
@@ -86,25 +123,22 @@ struct FDinoCustomizationAppearance : public FFastArraySerializer
 			if(Data.DomainTag.MatchesTagExact(DomainTag))
 			{
 				Data.InstanceTag = InstanceTag;
+
+				for(const auto& Pair : SubDomains)
+				{
+					Data.AddOrUpdateSubDomain(Pair.Key, Pair.Value);
+				}
+				
 				return true;
 			}
 		}
 
 		// the domain is not there, add it
-		const FDinoCustomizationAppearanceDomainData NeWDomain = FDinoCustomizationAppearanceDomainData(DomainTag, InstanceTag);
-		Domains.Add(NeWDomain);
+		const FDinoCustomizationAppearanceDomainData NewDomain = FDinoCustomizationAppearanceDomainData(DomainTag, InstanceTag, SubDomains);
+		Domains.Add(NewDomain);
 		
 		return true;
 	}
 
-	TMap<FGameplayTag, FGameplayTag> GetDomainsAsMap() const
-	{
-		TMap<FGameplayTag, FGameplayTag> Map;
-		for(const FDinoCustomizationAppearanceDomainData& Data : Domains)
-		{
-			Map.Add(Data.DomainTag, Data.InstanceTag);
-		}
-		return Map;
-	}
 
 };

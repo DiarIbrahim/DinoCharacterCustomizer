@@ -14,6 +14,8 @@ class DINOCUSTOMIZER_API UDinoCustomizerAction_SkeletalMesh : public UDinoCustom
 {
 	GENERATED_BODY()
 
+	UDinoCustomizerAction_SkeletalMesh();
+	
 public:
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Mesh")
@@ -21,5 +23,6 @@ public:
 
 
 	virtual void OnActionStarted_Implementation(const FDinoCustomizerActionActivationData& ActivationData) override;
+
 
 };

@@ -14,10 +14,12 @@ class DINOCUSTOMIZER_API UDinoCustomizerAction_StaticMesh : public UDinoCustomiz
 {
 	GENERATED_BODY()
 
+	UDinoCustomizerAction_StaticMesh();
+
 public:
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Mesh")
-	UStaticMesh* StaticMesh;
+	TSoftObjectPtr<UStaticMesh> StaticMesh;
 
 
 	virtual void OnActionStarted_Implementation(const FDinoCustomizerActionActivationData& ActivationData) override;

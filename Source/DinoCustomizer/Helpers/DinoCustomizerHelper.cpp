@@ -5,65 +5,33 @@
 
 #include "DinoCustomizer/Actions/DinoCustomizerAction.h"
 #include "DinoCustomizer/Data/DinoCustomizationAppearence.h"
-#include "DinoCustomizer/Data/DinoCustomizationDataBase.h"
 
 UDinoCustomizerAction* UDinoCustomizerHelper::GetCustomizationInstanceDataFromDatabase(
-	UDinoCustomizationDataBase* InDatabase, FGameplayTag Domain, FGameplayTag InstanceTag)
+	UDinoCustomizerDatabase* InDatabase, FGameplayTag Domain, FGameplayTag InstanceTag)
 {
 	if(IsValid(InDatabase) == false) return nullptr;
 
-	if(InDatabase->CustomizableDomains.Contains(Domain) == false) return nullptr;
 
-	UDinoCustomizableDomainData* DomainData = *InDatabase->CustomizableDomains.Find(Domain);
-
-	for(UDinoCustomizerAction* Instance : DomainData->Instances)
+	if(UDinoCustomizerDatabaseDomain* DomainData = InDatabase->GetDomainByTag(Domain))
 	{
-		if(Instance->InstanceTag.MatchesTagExact(InstanceTag))
-		{
-			return Instance;
-		}
+		return DomainData->GetInstanceByTag(InstanceTag);
 	}
-	
 	return nullptr;
 }
 
-TMap<FGameplayTag, UDinoCustomizerAction*> UDinoCustomizerHelper::LoadCharacterAppearanceData(
-	UDinoCustomizationDataBase* InDatabase, const FDinoCustomizationAppearance& CharacterAppearance)
-{
-	TMap<FGameplayTag, UDinoCustomizerAction*> CharacterInstanceData;
 
-	for(const auto& Pair : CharacterAppearance.GetDomainsAsMap())
-	{
-		// check if the domain is available in the database
-		if(InDatabase->CustomizableDomains.Contains(Pair.Key) == false)  continue;;
-
-		UDinoCustomizableDomainData* DomainData = *InDatabase->CustomizableDomains.Find(Pair.Key);
-
-		for( UDinoCustomizerAction* Instance : DomainData->Instances)
-		{
-			if(Instance->InstanceTag.MatchesTagExact(Pair.Value))
-			{
-				CharacterInstanceData.Add(Pair.Key, Instance);
-			}
-		}
-	}
-	
-	return CharacterInstanceData;
-}
-
-FDinoCustomizationAppearance UDinoCustomizerHelper::GenerateMinimalCustomizationAppearanceFromDatabase(UDinoCustomizationDataBase* InDatabase)
+FDinoCustomizationAppearance UDinoCustomizerHelper::GenerateMinimalCustomizationAppearanceFromDatabase(UDinoCustomizerDatabase* InDatabase)
 {
 
 	FDinoCustomizationAppearance AppearanceData = FDinoCustomizationAppearance();
 
 	if(IsValid(InDatabase) == false) return AppearanceData;
 
-	for(const auto& Pair : InDatabase->CustomizableDomains)
+	for(UDinoCustomizerDatabaseDomain* Domain : InDatabase->Domains)
 	{
-		if(Pair.Value->Instances.IsEmpty() == false)
+		if(UDinoCustomizerAction* MinimalInstance = Domain->GetMinimalInstance())
 		{
-			UDinoCustomizerAction* Instance = Pair.Value->Instances[0];
-			AppearanceData.AddOrUpdateDomainData(Pair.Key, Instance->InstanceTag);
+			AppearanceData.AddOrUpdateDomainData(Domain->DomainTag, MinimalInstance->InstanceTag);
 		}
 	}
 	
@@ -71,22 +39,20 @@ FDinoCustomizationAppearance UDinoCustomizerHelper::GenerateMinimalCustomization
 }
 
 
-FDinoCustomizationAppearance UDinoCustomizerHelper::GenerateRandomCustomizationAppearanceFromDatabase( UDinoCustomizationDataBase* InDatabase)
+FDinoCustomizationAppearance UDinoCustomizerHelper::GenerateRandomCustomizationAppearanceFromDatabase( UDinoCustomizerDatabase* InDatabase, bool bSelectRandomForEachSubDomainForAllDomains)
 {
 	
 	FDinoCustomizationAppearance AppearanceData = FDinoCustomizationAppearance();
 
 	if(IsValid(InDatabase) == false) return AppearanceData;
 
-	for(const auto& Pair : InDatabase->CustomizableDomains)
+	for(UDinoCustomizerDatabaseDomain* Domain : InDatabase->Domains)
 	{
-		if(Pair.Value->Instances.IsEmpty() == false)
+		if(UDinoCustomizerAction* RandomInstance = Domain->GetRandomInstance())
 		{
-			UDinoCustomizerAction* Instance  = Pair.Value->Instances[FMath::RandRange(0,  Pair.Value->Instances.Num()-1)];
-			AppearanceData.AddOrUpdateDomainData(Pair.Key, Instance->InstanceTag);
+			AppearanceData.AddOrUpdateDomainData(Domain->DomainTag, RandomInstance->InstanceTag);
 		}
 	}
-	
 	
 	return AppearanceData;
 }
@@ -94,10 +60,35 @@ FDinoCustomizationAppearance UDinoCustomizerHelper::GenerateRandomCustomizationA
 FGameplayTag UDinoCustomizerHelper::GetAppearanceDomainInstance(
 	const FDinoCustomizationAppearance& CharacterAppearance, FGameplayTag DomainTag)
 {
-	TMap<FGameplayTag,FGameplayTag> Map = CharacterAppearance.GetDomainsAsMap();
-	if(Map.Contains(DomainTag))
+
+	for(FDinoCustomizationAppearanceDomainData Data :  CharacterAppearance.Domains)
 	{
-		return Map[DomainTag];
+		if(Data.DomainTag.MatchesTagExact(DomainTag))
+		{
+			return Data.InstanceTag;
+		}
 	}
+
+	return FGameplayTag::EmptyTag;
+}
+
+FGameplayTag UDinoCustomizerHelper::GetAppearanceSubDomainInstance(
+	const FDinoCustomizationAppearance& CharacterAppearance, FGameplayTag DomainTag, FGameplayTag SubDomainTag)
+{
+	for(FDinoCustomizationAppearanceDomainData Data :  CharacterAppearance.Domains)
+	{
+		if(Data.DomainTag.MatchesTagExact(DomainTag))
+		{
+				for(FDinoCustomizationAppearanceSubDomainData SubDomain :  Data.SubDomains)
+				{
+					if(SubDomain.SubDomainTag.MatchesTagExact(SubDomainTag))
+					{
+						return SubDomain.SubInstanceTag;
+					}
+				}
+			
+		}
+	}
+
 	return FGameplayTag::EmptyTag;
 }

@@ -6,7 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 
 
-FString CHARACTER_APPEARANCE_SAVE_NAME =  "CharacterAppearanceSave";
+FString APPEARANCE_SAVE_NAME =  "CustomizationAppearanceSave";
 
 
 void UDinoCustomizerSaveGame::AddOrUpdateCustomizationAppearanceToSlot(
@@ -34,10 +34,10 @@ void UDinoCharacterCustomizerSaveGameHelper::SaveCustomizationAppearance( const 
 
 	UDinoCustomizerSaveGame* AppearanceSaveGame = nullptr;
 	
-	if(UGameplayStatics::DoesSaveGameExist(CHARACTER_APPEARANCE_SAVE_NAME,0))
+	if(UGameplayStatics::DoesSaveGameExist(APPEARANCE_SAVE_NAME,0))
 	{
 		
-		AppearanceSaveGame = Cast<UDinoCustomizerSaveGame>(UGameplayStatics::LoadGameFromSlot(CHARACTER_APPEARANCE_SAVE_NAME, 0));
+		AppearanceSaveGame = Cast<UDinoCustomizerSaveGame>(UGameplayStatics::LoadGameFromSlot(APPEARANCE_SAVE_NAME, 0));
 		if(IsValid(AppearanceSaveGame))
 		{
 			AppearanceSaveGame->AddOrUpdateCustomizationAppearanceToSlot(CharacterAppearance,AppearanceIndex);
@@ -49,15 +49,15 @@ void UDinoCharacterCustomizerSaveGameHelper::SaveCustomizationAppearance( const 
 		AppearanceSaveGame->AddOrUpdateCustomizationAppearanceToSlot(CharacterAppearance,AppearanceIndex);
 	}
 
-	UGameplayStatics::SaveGameToSlot(AppearanceSaveGame,CHARACTER_APPEARANCE_SAVE_NAME,0);
+	UGameplayStatics::SaveGameToSlot(AppearanceSaveGame,APPEARANCE_SAVE_NAME,0);
 }
 
 FDinoCustomizationAppearance UDinoCharacterCustomizerSaveGameHelper::LoadCustomizationAppearance(const int32 AppearanceIndex)
 {
-	if(UGameplayStatics::DoesSaveGameExist(CHARACTER_APPEARANCE_SAVE_NAME,0))
+	if(UGameplayStatics::DoesSaveGameExist(APPEARANCE_SAVE_NAME,0))
 	{
 		
-		UDinoCustomizerSaveGame* AppearanceSaveGame = Cast<UDinoCustomizerSaveGame>(UGameplayStatics::LoadGameFromSlot(CHARACTER_APPEARANCE_SAVE_NAME, 0));
+		UDinoCustomizerSaveGame* AppearanceSaveGame = Cast<UDinoCustomizerSaveGame>(UGameplayStatics::LoadGameFromSlot(APPEARANCE_SAVE_NAME, 0));
 		if(IsValid(AppearanceSaveGame))
 		{
 			return AppearanceSaveGame->LoadCustomizationAppearance(AppearanceIndex);

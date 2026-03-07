@@ -6,11 +6,11 @@
 #include "GameplayTagContainer.h"
 #include "DinoCustomizer/Camera/DinoCustomizerCameraSettings.h"
 #include "DinoCustomizer/Data/DinoCustomizationAppearence.h"
-#include "DinoCustomizer/Data/DinoCustomizationDataBase.h"
 
 #include "GameFramework/Pawn.h"
 #include "DinoCustomizerStudio.generated.h"
 
+class UDinoCustomizerDatabase;
 class UDinoCustomizationDataBase;
 class USpringArmComponent;
 class UCameraComponent;
@@ -52,7 +52,7 @@ protected:
 	AActor* CurrentCustomizableActor;
 	// current data base we use
 	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<UDinoCustomizationDataBase> CurrentCustomizationDataBase;
+	TObjectPtr<UDinoCustomizerDatabase> CurrentCustomizationDataBase;
 	// current customizable domains provided buy current customizable actor
 	UPROPERTY()
 	TMap<FGameplayTag, UObject*> CurrentCustomizableDomains;
@@ -86,11 +86,17 @@ public:
 
 	//  starts the customization action, the action still may fail (see action's validation and init) 
 	UFUNCTION(BlueprintCallable)
-	void ApplyCustomizationActionToDomain(const FGameplayTag& Domain, UDinoCustomizerAction* Action);
+	void ApplyCustomizationActionToDomain(const FGameplayTag& Domain, UDinoCustomizerAction* Action, TMap<FGameplayTag,FGameplayTag> SubDomains);
+
+	//  starts the customization action, the action still may fail (see action's validation and init)
+	// not needs sub domains
+	UFUNCTION(BlueprintCallable)
+	void ApplyCustomizationActionToDomainNoSubDomain(const FGameplayTag& Domain, UDinoCustomizerAction* Action);
+	
 	
 	// this is called by customization actions when they successfully finish, here we update the our character appearance data after actions  
 	UFUNCTION(BlueprintCallable)
-	void CommitCustomizationActionOnDomain(const FGameplayTag& DomainTag, const FGameplayTag& InstanceTag);
+	void CommitCustomizationActionOnDomain(const FGameplayTag& DomainTag, const FGameplayTag& InstanceTag,  const TMap<FGameplayTag, FGameplayTag>& SubDomains);
 
 	// camera settings
 	UFUNCTION(BlueprintCallable)
@@ -101,12 +107,12 @@ public:
 	void ApplyDefaultCameraSettings();
 
 	UFUNCTION(BlueprintCallable)
-	bool InitializeCustomizationFromDatabase(UDinoCustomizationDataBase* InCustomizationDatabase, bool bApplyMinimalAppearanceFromDataBase = true);
+	bool InitializeCustomizationFromDatabase(UDinoCustomizerDatabase* InDatabase, bool bApplyMinimalAppearanceFromDataBase = true);
 	
 	UFUNCTION(BlueprintPure)
 	FDinoCustomizationAppearance GetCustomizationAppearance() const{ return CurrentCustomizationAppearance;};
 	UFUNCTION(BlueprintPure)
-	UDinoCustomizationDataBase* GetCustomizationDatabase() const { return CurrentCustomizationDataBase;}
+	UDinoCustomizerDatabase* GetCustomizationDatabase() const { return CurrentCustomizationDataBase;}
 	UFUNCTION(BlueprintPure)
 	AActor* GetCurrentCustomizableActor() const { return CurrentCustomizableActor;}
 	
