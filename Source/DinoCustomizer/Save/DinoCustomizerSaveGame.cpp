@@ -9,17 +9,13 @@
 FString APPEARANCE_SAVE_NAME =  "CustomizationAppearanceSave";
 
 
-void UDinoCustomizerSaveGame::AddOrUpdateCustomizationAppearanceToSlot(
-	const FDinoCustomizationAppearance& CharacterAppearance, int32 SlotIndex)
+void UDinoCustomizerSaveGame::AddOrUpdateCustomizationAppearanceToSlot( const FDinoCustomizationAppearance& CharacterAppearance, int32 SlotIndex)
 {
-	if(CharacterAppearanceMap.Contains(SlotIndex) )
-	{
-		CharacterAppearanceMap[SlotIndex] = CharacterAppearance;
-	}else
-	{
-		CharacterAppearanceMap.Add(SlotIndex, CharacterAppearance);
-	}
+
+	if(CharacterAppearanceMap.Contains(SlotIndex))
+		CharacterAppearanceMap.Remove(SlotIndex);
 	
+	CharacterAppearanceMap.Add(SlotIndex, CharacterAppearance);
 	
 }
 
@@ -34,14 +30,10 @@ void UDinoCharacterCustomizerSaveGameHelper::SaveCustomizationAppearance( const 
 
 	UDinoCustomizerSaveGame* AppearanceSaveGame = nullptr;
 	
-	if(UGameplayStatics::DoesSaveGameExist(APPEARANCE_SAVE_NAME,0))
+	AppearanceSaveGame = Cast<UDinoCustomizerSaveGame>(UGameplayStatics::LoadGameFromSlot(APPEARANCE_SAVE_NAME, 0));
+	if(IsValid(AppearanceSaveGame))
 	{
-		
-		AppearanceSaveGame = Cast<UDinoCustomizerSaveGame>(UGameplayStatics::LoadGameFromSlot(APPEARANCE_SAVE_NAME, 0));
-		if(IsValid(AppearanceSaveGame))
-		{
 			AppearanceSaveGame->AddOrUpdateCustomizationAppearanceToSlot(CharacterAppearance,AppearanceIndex);
-		}
 		
 	}else
 	{

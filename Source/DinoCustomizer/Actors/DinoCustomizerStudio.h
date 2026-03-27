@@ -59,9 +59,6 @@ protected:
 	// current main mesh provided by current customizable actor
 	UPROPERTY(BlueprintReadOnly)
 	UMeshComponent* CurrentCustomizableActorMainMesh;
-	// current appearance data for current customizable actor
-	UPROPERTY()
-	FDinoCustomizationAppearance CurrentCustomizationAppearance;
 
 	// camera settings data currently active 
 	UPROPERTY()
@@ -92,11 +89,6 @@ public:
 	// not needs sub domains
 	UFUNCTION(BlueprintCallable)
 	void ApplyCustomizationActionToDomainNoSubDomain(const FGameplayTag& Domain, UDinoCustomizerAction* Action);
-	
-	
-	// this is called by customization actions when they successfully finish, here we update the our character appearance data after actions  
-	UFUNCTION(BlueprintCallable)
-	void CommitCustomizationActionOnDomain(const FGameplayTag& DomainTag, const FGameplayTag& InstanceTag,  const TMap<FGameplayTag, FGameplayTag>& SubDomains);
 
 	// camera settings
 	UFUNCTION(BlueprintCallable)
@@ -110,7 +102,7 @@ public:
 	bool InitializeCustomizationFromDatabase(UDinoCustomizerDatabase* InDatabase, bool bApplyMinimalAppearanceFromDataBase = true);
 	
 	UFUNCTION(BlueprintPure)
-	FDinoCustomizationAppearance GetCustomizationAppearance() const{ return CurrentCustomizationAppearance;};
+	FDinoCustomizationAppearance GetCustomizationAppearance();
 	UFUNCTION(BlueprintPure)
 	UDinoCustomizerDatabase* GetCustomizationDatabase() const { return CurrentCustomizationDataBase;}
 	UFUNCTION(BlueprintPure)

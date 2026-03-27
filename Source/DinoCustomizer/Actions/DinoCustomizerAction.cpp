@@ -12,7 +12,7 @@ void UDinoCustomizerAction::InitAction(FDinoCustomizerActionActivationData Activ
 {
 	if(IsValid(ActivationData.TargetActor) == false || ActivationData.TargetDomainTag.IsValid() == false)
 	{
-		EndAction();
+		EndAction(false);
 		return;
 	}
 
@@ -20,13 +20,16 @@ void UDinoCustomizerAction::InitAction(FDinoCustomizerActionActivationData Activ
 
 	if(ValidateAction() == false)
 	{
-		EndAction();
+		EndAction(false);
 		return;
 	}
 
 	OnActionStarted(CurrentActivationData);
 
-	ApplyDefaultSubAction();
+	if( CurrentActivationData.ActiveSubDomains.IsEmpty() == false)
+	{
+		ApplyDefaultSubAction();
+	}
 }
 
 
@@ -45,8 +48,11 @@ void UDinoCustomizerAction::ApplyDefaultSubAction()
 			{
 				for(UDinoCustomizerSubAction* SubAction :  SubDomain->SubInstances)
 				{
-					ApplySubActionOnSubDomain(SubAction, Pair.Key);
-					break;
+					if(SubAction->SubInstanceTag.MatchesTagExact(Pair.Value))
+					{
+						ApplySubActionOnSubDomain(SubAction, Pair.Key);
+						break;
+					}
 				}
 
 				break;
@@ -68,30 +74,16 @@ bool UDinoCustomizerAction::ValidateAction_Implementation() const
 	return true;
 }
 
-void UDinoCustomizerAction::CommitAction()
-{
-	if(IsValid(CurrentActivationData.OwningCustomizerPawn) == false ) return;
-
-	if(InstanceTag.IsValid() == false) return;
-
-	CurrentActivationData.OwningCustomizerPawn->CommitCustomizationActionOnDomain(CurrentActivationData.TargetDomainTag, InstanceTag, CurrentActiveSubDomains);
-	
-}
-
-
 void UDinoCustomizerAction::OnTick_Implementation(float DeltaTime)
 {
 }
 
-void UDinoCustomizerAction::EndAction()
+void UDinoCustomizerAction::EndAction(bool bSuccessful)
 {
-
-	OnActionEnded();
-
-	// notify the owning pawn that we are done !
+	OnActionEnded(bSuccessful);
 }
 
-void UDinoCustomizerAction::OnActionEnded_Implementation()
+void UDinoCustomizerAction::OnActionEnded_Implementation(bool bSuccessful)
 {
 }
 
@@ -100,14 +92,16 @@ bool UDinoCustomizerAction::ShouldReceiveTick_Implementation()
 	return false;
 }
 
+void UDinoCustomizerAction::CommitAction()
+{
+	CurrentActivationData.OwningComponent->CommitAction(this, CurrentActivationData.TargetDomainTag, CurrentActivationData.ActiveSubDomains);
+}
+
 void UDinoCustomizerAction::ApplySubActionOnSubDomain(UDinoCustomizerSubAction* SubAction, const FGameplayTag& SubDomainTag)
 {
 	if(IsValid(SubAction))
 	{
 		SubAction->InitAction(this, CurrentActivationData.TargetDomainObject);
-
-		// add or update
-		CurrentActiveSubDomains.Add(SubDomainTag, SubAction->SubInstanceTag);
 	}
 }
 

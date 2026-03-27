@@ -46,33 +46,3 @@ public:
 	virtual void OnActionStarted_Implementation(UDinoCustomizerAction* OwnerAction, UObject* TargetObject);
 	
 };
-
-USTRUCT(BlueprintType)
-struct FDinoCustomizerSubDomainContainer
-{
-	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FText SubActionDisplayName = {};
-
-	// will automatically apply sub action 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	bool bApplyFirstSubAction = true;
-	
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Instanced)
-	TArray<UDinoCustomizerSubAction*> SubActions;
-
-	UDinoCustomizerSubAction* FindSubDomainInstance(const FGameplayTag& InstanceTag)
-	{
-		for (UDinoCustomizerSubAction* SubAction : SubActions)
-		{
-			if(IsValid(SubAction) && SubAction->SubInstanceTag.MatchesTagExact(InstanceTag))
-			{
-				return SubAction;
-			}
-		}
-		return nullptr;
-	}
-	
-};
-

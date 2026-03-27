@@ -33,7 +33,8 @@ FDinoCustomizationAppearance UDinoCustomizerHelper::GenerateMinimalCustomization
 	{
 		if(UDinoCustomizerAction* MinimalInstance = Domain->GetMinimalInstance())
 		{
-			AppearanceData.AddOrUpdateDomainData(Domain->DomainTag, MinimalInstance->InstanceTag);
+			FDinoCustomizationAppearanceDomainData& DomainData = AppearanceData.GetDomainData(Domain->DomainTag);
+			DomainData.InstanceTag = MinimalInstance->InstanceTag;
 		}
 	}
 	
@@ -60,7 +61,9 @@ FDinoCustomizationAppearance UDinoCustomizerHelper::GenerateRandomCustomizationA
 					SubDomains.Add(SubDomain->SubDomainTag, RandomSubInstance->SubInstanceTag);
 				}
 			}
-			AppearanceData.AddOrUpdateDomainData(Domain->DomainTag, RandomInstance->InstanceTag, SubDomains);
+			FDinoCustomizationAppearanceDomainData& DomainData = AppearanceData.GetDomainData(Domain->DomainTag);
+			DomainData.InstanceTag = RandomInstance->InstanceTag;
+			DomainData.SetSubDomainsFromMap(SubDomains);
 		}
 	}
 	
@@ -133,3 +136,25 @@ FGameplayTag UDinoCustomizerHelper::GetNextUnUsedCustomizableSubInstanceTag(cons
 
 	return FGameplayTag::EmptyTag;
 }
+
+void UDinoCustomizerHelper::DebugPrintAppearance(const FDinoCustomizationAppearance& Appearance, float Duration,FLinearColor Color)
+{
+	
+	FString Message = "---------- Appearance Data -------- \n";
+	for(FDinoCustomizationAppearanceDomainData Data :  Appearance.Domains)
+	{
+		Message += " - DomainTag: " + Data.DomainTag.ToString() + "  -- Instance : " + Data.InstanceTag.ToString() + "\n";
+		for(FDinoCustomizationAppearanceSubDomainData SubDomain :  Data.SubDomains)
+		{
+			Message += " ----------------- SubDomain: " + SubDomain.SubDomainTag.ToString() +  "   -- Sub Instance "  + SubDomain.SubInstanceTag.ToString() + "\n";
+		}
+		Message += "\n";
+		
+	}
+	Message += "\n ---------- END  -------- ";
+	
+	GEngine->AddOnScreenDebugMessage(-1,Duration,Color.ToFColor(true), Message);
+}
+
+
+

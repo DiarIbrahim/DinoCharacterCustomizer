@@ -63,5 +63,13 @@ public:
 	// by providing a list of instance tags, it will return next tag child of "CustomizableSubInstance" tag if any left 
 	UFUNCTION(BlueprintPure, Category = "Dino Customizer")
 	static FGameplayTag GetNextUnUsedCustomizableSubInstanceTag(const FGameplayTagContainer& UsedTags);
+
+
+
+
+	// debug
+	UFUNCTION(BlueprintCallable, Category = "Dino Customizer", meta = (WorldContext = "WorldContextObject"))
+	static void DebugPrintAppearance(const FDinoCustomizationAppearance& Appearance, float Duration  = 1.0f,FLinearColor Color = FLinearColor::Blue);
+	
 	
 };

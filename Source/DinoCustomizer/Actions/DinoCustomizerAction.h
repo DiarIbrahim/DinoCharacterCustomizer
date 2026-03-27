@@ -13,6 +13,13 @@
 
 class ADinoCustomizerStudio;
 
+
+
+
+
+
+
+
 USTRUCT(BlueprintType)
 struct FDinoCustomizerActionActivationData
 {
@@ -29,7 +36,7 @@ struct FDinoCustomizerActionActivationData
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UObject* TargetDomainObject;
 
-	// Sub domains that are going to apply when this action is applied
+	// Sub domain instances that are going to apply when this action is applied
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TMap<FGameplayTag,FGameplayTag> ActiveSubDomains;
 
@@ -53,6 +60,10 @@ UCLASS(Abstract, Blueprintable, EditInlineNew)
 class DINOCUSTOMIZER_API UDinoCustomizerAction : public UObject
 {
 	GENERATED_BODY()
+
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDinoCustomizerActionCommited, UDinoCustomizerAction*, Action);
+
 
 
 public:
@@ -81,6 +92,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Instance")
 	TObjectPtr<UAnimMontage> TransitionAnimMontage;
 
+
+
+	UPROPERTY(BlueprintAssignable)
+	FOnDinoCustomizerActionCommited OnActionCommited;
+
 	
 
 protected:
@@ -103,31 +119,30 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	bool ValidateAction() const;
 	virtual bool ValidateAction_Implementation() const;
-
-	// notifies the changes to the Character Customization pawn if this action called with a valid Character Customization pawn, other wise this call will be ignored
-	UFUNCTION(BlueprintCallable)
-	void CommitAction();
-
+	
 	UFUNCTION(BlueprintNativeEvent)
 	void OnTick(float DeltaTime);
 	virtual void OnTick_Implementation(float DeltaTime);
 	
-	void EndAction();
+	void EndAction(bool bSuccessful = true);
 	UFUNCTION(BlueprintNativeEvent)
-	void OnActionEnded();
-	virtual void OnActionEnded_Implementation();
+	void OnActionEnded(bool bSuccessful = true);
+	virtual void OnActionEnded_Implementation(bool bSuccessful = true);
 
 	// 
 	UFUNCTION(BlueprintNativeEvent)
 	bool ShouldReceiveTick();
 	virtual bool ShouldReceiveTick_Implementation();
 
+	// when we are confident that the action is done and we are Ok with storing  the change !
+	UFUNCTION(BlueprintCallable)
+	void CommitAction();
+
 	/*
 	 *  To Apply a sub action 
 	 */
 	UFUNCTION(BlueprintCallable)
 	void ApplySubActionOnSubDomain(UDinoCustomizerSubAction* SubAction, const FGameplayTag& SubDomainTag);
-
 
 	UDinoCustomizerSubDomain* AddSubDomain();
 	UDinoCustomizerSubDomain*  DuplicateSubDomain(UDinoCustomizerSubDomain* SubDomainToReplicate);

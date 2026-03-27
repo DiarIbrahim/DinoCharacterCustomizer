@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Components/ActorComponent.h"
+#include "DinoCustomizer/Data/DinoCustomizationAppearence.h"
 #include "DinoCustomizerComponent.generated.h"
 
 class ADinoCustomizerStudio;
@@ -32,6 +33,10 @@ protected:
 	// only one instance can be active on each domain
 	UPROPERTY()
 	TMap<FGameplayTag /*Domain Tag*/, UDinoCustomizerAction*> ActiveDomainInstances;
+
+	// current appearance data for current customizable actor
+	UPROPERTY()
+	FDinoCustomizationAppearance CustomizationAppearance;
 	
 protected:
 	
@@ -47,6 +52,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category="DinoCustomizer", meta=(Categories="CustomizableDomain"))
 	void RegisterDomain(FGameplayTag DomainTag,TArray<UObject*> DomainObjects);
 
+	UFUNCTION(BlueprintCallable, Category="DinoCustomizer")
+	FDinoCustomizationAppearance GetAppearance(){return CustomizationAppearance;}
 
 	UFUNCTION(BlueprintCallable, Category="DinoCustomizer", meta=(Categories="CustomizableDomain"))
 	bool ApplyInstanceToDomain(FGameplayTag InDomainTag, UDinoCustomizerAction* Instance);
@@ -54,8 +61,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category="DinoCustomizer", meta=(Categories="CustomizableDomain"))
 	bool ApplyInstanceToDomainWithSubDomainData(FGameplayTag InDomainTag, UDinoCustomizerAction* Instance, TMap<FGameplayTag,FGameplayTag> SubDomains);
 
+	void CommitAction(UDinoCustomizerAction* Action,const FGameplayTag& DomainTag, TMap<FGameplayTag,FGameplayTag> SubDomains);
+
 private:
 
+	
 	bool ApplyInstanceToDomain_Internal(ADinoCustomizerStudio* Studio, FGameplayTag InDomainTag, UDinoCustomizerAction* Instance, TMap<FGameplayTag,FGameplayTag> SubDomains);
 	
 };

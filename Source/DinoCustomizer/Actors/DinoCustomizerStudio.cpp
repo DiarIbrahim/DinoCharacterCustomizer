@@ -124,14 +124,15 @@ void ADinoCustomizerStudio::OnConstruction(const FTransform& Transform)
 
 void ADinoCustomizerStudio::ApplyCustomizationAppearance(const FDinoCustomizationAppearance& AppearanceData)
 {
+
+	
 	for(const FDinoCustomizationAppearanceDomainData& DomainData : AppearanceData.Domains)
 	{
-
-
 		const FGameplayTag Domain = DomainData.DomainTag;
 		const FGameplayTag InstanceTag = DomainData.InstanceTag;
 		if(UDinoCustomizerAction* Action =  UDinoCustomizerHelper::GetCustomizationInstanceDataFromDatabase(CurrentCustomizationDataBase, Domain, InstanceTag))
 		{
+			
 			ApplyCustomizationActionToDomain(Domain, Action, DomainData.GetSubDomainsAsMap());
 		}
 	}
@@ -208,6 +209,16 @@ bool ADinoCustomizerStudio::InitializeCustomizationFromDatabase(UDinoCustomizerD
 	return true;
 }
 
+FDinoCustomizationAppearance ADinoCustomizerStudio::GetCustomizationAppearance()
+{
+	if(UDinoCustomizerComponent* CustomizerComponent = CurrentCustomizableActor->GetComponentByClass<UDinoCustomizerComponent>())
+	{
+		return CustomizerComponent->GetAppearance();
+	}
+
+	return FDinoCustomizationAppearance();
+}
+
 
 bool ADinoCustomizerStudio::IsCustomizableClassAllowed(TSubclassOf<AActor> InActorClass) const
 {
@@ -236,11 +247,6 @@ void ADinoCustomizerStudio::ApplyCustomizationActionToDomain(const FGameplayTag&
 void ADinoCustomizerStudio::ApplyCustomizationActionToDomainNoSubDomain(const FGameplayTag& Domain, UDinoCustomizerAction* Action)
 {
 	ApplyCustomizationActionToDomain(Domain, Action, {});
-}
-
-void ADinoCustomizerStudio::CommitCustomizationActionOnDomain(const FGameplayTag& DomainTag,const FGameplayTag& InstanceTag, const TMap<FGameplayTag, FGameplayTag>& SubDomains)
-{
-	CurrentCustomizationAppearance.AddOrUpdateDomainData(DomainTag, InstanceTag, SubDomains);
 }
 
 
