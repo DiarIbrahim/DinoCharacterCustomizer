@@ -77,10 +77,7 @@ void UDinoCustomizerComponent::CommitAction(UDinoCustomizerAction* Action, const
 	FDinoCustomizationAppearanceDomainData& TargetDomainData = CustomizationAppearance.GetDomainData(DomainTag);
 	TargetDomainData.InstanceTag = Action->InstanceTag;
 	TargetDomainData.SetSubDomainsFromMap(SubDomains);
-
-
-	GEngine->AddOnScreenDebugMessage(-1,12,FColor::Red,FString::Printf(TEXT("Commit : Domain %s   -- inst %s"), *DomainTag.ToString(), *Action->InstanceTag.ToString()));
-
+	
 }
 
 

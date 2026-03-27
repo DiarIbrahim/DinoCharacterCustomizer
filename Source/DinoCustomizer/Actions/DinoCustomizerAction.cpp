@@ -24,6 +24,10 @@ void UDinoCustomizerAction::InitAction(FDinoCustomizerActionActivationData Activ
 		return;
 	}
 
+
+	// store active sub domain data (we might commit before the subdomains apply since these are coming from activation data we can store them as active (they will be applied anyways))
+	CurrentActiveSubDomains = CurrentActivationData.ActiveSubDomains;
+	
 	OnActionStarted(CurrentActivationData);
 
 	if( CurrentActivationData.ActiveSubDomains.IsEmpty() == false)
@@ -94,7 +98,7 @@ bool UDinoCustomizerAction::ShouldReceiveTick_Implementation()
 
 void UDinoCustomizerAction::CommitAction()
 {
-	CurrentActivationData.OwningComponent->CommitAction(this, CurrentActivationData.TargetDomainTag, CurrentActivationData.ActiveSubDomains);
+	CurrentActivationData.OwningComponent->CommitAction(this, CurrentActivationData.TargetDomainTag, CurrentActiveSubDomains);
 }
 
 void UDinoCustomizerAction::ApplySubActionOnSubDomain(UDinoCustomizerSubAction* SubAction, const FGameplayTag& SubDomainTag)
@@ -102,6 +106,11 @@ void UDinoCustomizerAction::ApplySubActionOnSubDomain(UDinoCustomizerSubAction* 
 	if(IsValid(SubAction))
 	{
 		SubAction->InitAction(this, CurrentActivationData.TargetDomainObject);
+
+		// now we changed some parts of the sub domains, commit again (this should only happen if only we did a successful change to the sub domain !)
+		CurrentActiveSubDomains.Add(SubDomainTag,SubAction->SubInstanceTag);
+		// commit new changes
+		CommitAction();
 	}
 }
 
