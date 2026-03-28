@@ -30,8 +30,25 @@ class DINOCUSTOMIZER_API ADinoCustomizerStudio : public APawn
 protected:
 
 
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, category = "Character Customizer|Camera", DisplayName= "Default Camera Setting")
+
+	/*
+	 *   This is a runtime value that allows us to switch on and off the customizable actor rotation around yaw
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dino Customizer|Studio|Camera")
+	bool bAllowCustomizableActorYawRotation = true;
+	/*
+	 *  Should we rotate the actor back to default rotation when we bAllowCustomizableActorRotationAroundYaw to false ?
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dino Customizer|Studio|Camera", meta=(EditCondition=bAllowCustomizableActorYawRotation))
+	bool bResetRotationToDefaultWhenYawRotationSwitchedOff = true;
+	/*
+	 *  reset rotation speed
+	 */ 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dino Customizer|Studio|Camera", meta=(EditCondition=bResetRotationToDefaultWhenYawRotationSwitchedOff))
+	float RestRotationToDefaultRotationInterpSpeed = 10.0f;
+
+	// the default camera settings, this set via database
+	UPROPERTY()
 	FDinoCustomizerCameraSettings DefaultCameraSettings;
 	
 	UPROPERTY(EditAnywhere)
@@ -67,6 +84,10 @@ protected:
 	UPROPERTY()
 	FDinoCustomizerCameraSettings TargetCameraSettings;
 
+	// internal
+	bool bResetCustomizableActorRotation = false;
+
+
 	
 public:
 	// Sets default values for this actor's properties
@@ -78,6 +99,13 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 
+	// ---- Init
+	UFUNCTION(BlueprintCallable)
+	bool InitializeStudioFromDatabase(UDinoCustomizerDatabase* InDatabase, bool bApplyMinimalAppearanceFromDataBase = true);
+
+
+	// ---- Customization
+	
 	UFUNCTION(BlueprintCallable)
 	void ApplyCustomizationAppearance(const FDinoCustomizationAppearance& AppearanceData);
 
@@ -90,16 +118,24 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyCustomizationActionToDomainNoSubDomain(const FGameplayTag& Domain, UDinoCustomizerAction* Action);
 
-	// camera settings
+	
+	// ---  camera settings
+
 	UFUNCTION(BlueprintCallable)
 	void ApplyCameraSettings(const FDinoCustomizerCameraSettings& InCameraSettings);
-
-	// camera settings
 	UFUNCTION(BlueprintCallable)
 	void ApplyDefaultCameraSettings();
-
+	// to rotate actor around Yaw, bAllowCustomizableActorYawRotation need to be true to allow this
 	UFUNCTION(BlueprintCallable)
-	bool InitializeCustomizationFromDatabase(UDinoCustomizerDatabase* InDatabase, bool bApplyMinimalAppearanceFromDataBase = true);
+	void AddCustomizableActorYawRotation(float Yaw);
+	// resets the customizable actor rotation around Yaw axis to default rotation 
+	UFUNCTION(BlueprintCallable)
+	void ResetCustomizableActorYawRotation();
+	UFUNCTION(BlueprintCallable)
+	void SetAllowCustomizableActorYawRotation(bool bValue);
+
+
+	// --- Getters
 	
 	UFUNCTION(BlueprintPure)
 	FDinoCustomizationAppearance GetCustomizationAppearance();
@@ -117,4 +153,6 @@ protected:
 	bool IsCustomizableClassAllowed(TSubclassOf<AActor> InActorClass) const;
 
 	void ApplyCurrentCameraSettings_Internal(const FDinoCustomizerCameraSettings& CameraSettings);
+
+	
 };

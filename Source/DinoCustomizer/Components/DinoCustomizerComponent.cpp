@@ -4,6 +4,7 @@
 #include "DinoCustomizerComponent.h"
 
 #include "DinoCustomizer/Actions/DinoCustomizerAction.h"
+#include "DinoCustomizer/Helpers/DinoCustomizerHelper.h"
 
 
 // Sets default values for this component's properties
@@ -55,22 +56,34 @@ void UDinoCustomizerComponent::RegisterDomain(FGameplayTag DomainTag, TArray<UOb
 	// at least one valid obj
 	if(IsValid(DomainObjects[0]) == false) return;
 	
-	DomainData.Add(DomainTag, DomainObjects);
+	DomainTargetData.Add(DomainTag, DomainObjects);
 
+}
+
+void UDinoCustomizerComponent::ApplyAppearanceFromDatabase(UDinoCustomizerDatabase* InDataBase, const FDinoCustomizationAppearance& NewAppearance)
+{
+	for(const FDinoCustomizationAppearanceDomainData& DomainData : NewAppearance.Domains)
+	{
+		const FGameplayTag Domain = DomainData.DomainTag;
+		const FGameplayTag InstanceTag = DomainData.InstanceTag;
+		if(UDinoCustomizerAction* Action =  UDinoCustomizerHelper::GetCustomizationInstanceDataFromDatabase(InDataBase, Domain, InstanceTag))
+		{
+			ApplyInstanceToDomain_Internal(Domain, Action, DomainData.GetSubDomainsAsMap());
+		}
+	}
 }
 
 bool UDinoCustomizerComponent::ApplyInstanceToDomain(FGameplayTag InDomainTag, UDinoCustomizerAction* Instance)
 {
-	return ApplyInstanceToDomain_Internal(nullptr, InDomainTag, Instance, {});
+	return ApplyInstanceToDomain_Internal(InDomainTag, Instance, {});
 }
 
 bool UDinoCustomizerComponent::ApplyInstanceToDomainWithSubDomainData(FGameplayTag InDomainTag, UDinoCustomizerAction* Instance, TMap<FGameplayTag, FGameplayTag> SubDomains)
 {
-	return ApplyInstanceToDomain_Internal(nullptr, InDomainTag, Instance, SubDomains);
+	return ApplyInstanceToDomain_Internal(InDomainTag, Instance, SubDomains);
 }
 
-void UDinoCustomizerComponent::CommitAction(UDinoCustomizerAction* Action, const FGameplayTag& DomainTag,
-	TMap<FGameplayTag, FGameplayTag> SubDomains)
+void UDinoCustomizerComponent::CommitAction(UDinoCustomizerAction* Action, const FGameplayTag& DomainTag, TMap<FGameplayTag, FGameplayTag> SubDomains)
 {
 	
 	// get (or add and get) appearance domain data
@@ -80,14 +93,7 @@ void UDinoCustomizerComponent::CommitAction(UDinoCustomizerAction* Action, const
 	
 }
 
-
-
-bool UDinoCustomizerComponent::ApplyInstanceToDomainFromStudio(ADinoCustomizerStudio* Studio, FGameplayTag InDomainTag, UDinoCustomizerAction* Instance, TMap<FGameplayTag, FGameplayTag> SubDomains)
-{
-	return ApplyInstanceToDomain_Internal(Studio, InDomainTag, Instance, SubDomains);
-}
-
-bool UDinoCustomizerComponent::ApplyInstanceToDomain_Internal(ADinoCustomizerStudio* Studio, FGameplayTag InDomainTag,  UDinoCustomizerAction* Instance, TMap<FGameplayTag,FGameplayTag> SubDomains)
+bool UDinoCustomizerComponent::ApplyInstanceToDomain_Internal(FGameplayTag InDomainTag,  UDinoCustomizerAction* Instance, TMap<FGameplayTag,FGameplayTag> SubDomains)
 {
 	if(ActiveDomainInstances.Contains(InDomainTag))
 	{
@@ -99,7 +105,7 @@ bool UDinoCustomizerComponent::ApplyInstanceToDomain_Internal(ADinoCustomizerStu
 	}
 
 	// check if domain registered
-	if(DomainData.Contains(InDomainTag) == false)
+	if(DomainTargetData.Contains(InDomainTag) == false)
 	{
 		// not registered
 		return false;
@@ -107,11 +113,10 @@ bool UDinoCustomizerComponent::ApplyInstanceToDomain_Internal(ADinoCustomizerStu
 	
 	
 	FDinoCustomizerActionActivationData ActionData = FDinoCustomizerActionActivationData();
-	ActionData.OwningCustomizerPawn = Studio;
 	ActionData.OwningComponent = this;
 	ActionData.TargetActor = GetOwner();
 	ActionData.TargetDomainTag = InDomainTag;
-	ActionData.TargetDomainObject = DomainData[InDomainTag][0];
+	ActionData.TargetDomainObject = DomainTargetData[InDomainTag][0];
 	ActionData.ActiveSubDomains = SubDomains;
 
 	Instance->InitAction(ActionData);

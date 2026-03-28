@@ -63,34 +63,54 @@ void ADinoCustomizerStudio::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 
-	if(IsValid(CurrentCustomizableActor) && CurrentCameraSettings.IsNearlyEqual(TargetCameraSettings) == false)
+	if(IsValid(CurrentCustomizableActor))
 	{
-
-			// Arm length
-			CurrentCameraSettings.DistanceToTarget = FMath::FInterpTo(CurrentCameraSettings.DistanceToTarget, TargetCameraSettings.DistanceToTarget, DeltaTime, TargetCameraSettings.LerpSpeed);
-
-			// FOV
-			CurrentCameraSettings.FOV =  FMath::FInterpTo(CurrentCameraSettings.FOV, TargetCameraSettings.FOV, DeltaTime, TargetCameraSettings.LerpSpeed);
-
-			// Rot
-			CurrentCameraSettings.RotationOffset = FMath::RInterpTo(CurrentCameraSettings.RotationOffset, TargetCameraSettings.RotationOffset, DeltaTime, TargetCameraSettings.LerpSpeed);
-
-			FVector TargetLocation = Root->GetComponentLocation() + TargetCameraSettings.TargetOffset;
-			
-			if(IsValid(CurrentCustomizableActorMainMesh) && CurrentCustomizableActorMainMesh->DoesSocketExist(TargetCameraSettings.CharacterSocketAsTarget))
-			{
-				// override to start from the socket location
-				TargetLocation = CurrentCustomizableActorMainMesh->GetSocketLocation(TargetCameraSettings.CharacterSocketAsTarget) + TargetCameraSettings.TargetOffset;
-			}
-
-			// LOC
-			CurrentCameraSettings.TargetOffset = FMath::VInterpTo(CurrentCameraSettings.TargetOffset, TargetLocation, DeltaTime, TargetCameraSettings.LerpSpeed);
-			
-
-			ApplyCurrentCameraSettings_Internal(CurrentCameraSettings);
-			
 		
+		if(CurrentCameraSettings.IsNearlyEqual(TargetCameraSettings) == false)
+		{
+
+				// Arm length
+				CurrentCameraSettings.DistanceToTarget = FMath::FInterpTo(CurrentCameraSettings.DistanceToTarget, TargetCameraSettings.DistanceToTarget, DeltaTime, TargetCameraSettings.LerpSpeed);
+
+				// FOV
+				CurrentCameraSettings.FOV =  FMath::FInterpTo(CurrentCameraSettings.FOV, TargetCameraSettings.FOV, DeltaTime, TargetCameraSettings.LerpSpeed);
+
+				// Rot
+				CurrentCameraSettings.RotationOffset = FMath::RInterpTo(CurrentCameraSettings.RotationOffset, TargetCameraSettings.RotationOffset, DeltaTime, TargetCameraSettings.LerpSpeed);
+
+				FVector TargetLocation = Root->GetComponentLocation() + TargetCameraSettings.TargetOffset;
+				
+				if(IsValid(CurrentCustomizableActorMainMesh) && CurrentCustomizableActorMainMesh->DoesSocketExist(TargetCameraSettings.CharacterSocketAsTarget))
+				{
+					// override to start from the socket location
+					TargetLocation = CurrentCustomizableActorMainMesh->GetSocketLocation(TargetCameraSettings.CharacterSocketAsTarget) + TargetCameraSettings.TargetOffset;
+				}
+
+				// LOC
+				CurrentCameraSettings.TargetOffset = FMath::VInterpTo(CurrentCameraSettings.TargetOffset, TargetLocation, DeltaTime, TargetCameraSettings.LerpSpeed);
+				
+
+				ApplyCurrentCameraSettings_Internal(CurrentCameraSettings);
+				
+			
+		}
+
+
+		//  reset customizable actor rotation to default
+		if(bResetCustomizableActorRotation)
+		{
+			FQuat DefaultRotation = CharacterPlacementLocation->GetComponentTransform().GetRotation() * CurrentCustomizationDataBase->ActorPlacementRotationOffset.Quaternion();
+			if(CurrentCustomizableActor->GetActorRotation().Equals(DefaultRotation.Rotator(), .5f) == false)
+			{
+				FRotator SmoothedRot = FMath::RInterpTo(CurrentCustomizableActor->GetActorRotation(), DefaultRotation.Rotator(),DeltaTime, RestRotationToDefaultRotationInterpSpeed);
+				CurrentCustomizableActor->SetActorRotation(SmoothedRot);
+			}
+			
+		}
 	}
+	
+
+	
 	
 }
 
@@ -125,16 +145,9 @@ void ADinoCustomizerStudio::OnConstruction(const FTransform& Transform)
 void ADinoCustomizerStudio::ApplyCustomizationAppearance(const FDinoCustomizationAppearance& AppearanceData)
 {
 
-	
-	for(const FDinoCustomizationAppearanceDomainData& DomainData : AppearanceData.Domains)
+	if(UDinoCustomizerComponent* CustomizerComponent = CurrentCustomizableActor->GetComponentByClass<UDinoCustomizerComponent>())
 	{
-		const FGameplayTag Domain = DomainData.DomainTag;
-		const FGameplayTag InstanceTag = DomainData.InstanceTag;
-		if(UDinoCustomizerAction* Action =  UDinoCustomizerHelper::GetCustomizationInstanceDataFromDatabase(CurrentCustomizationDataBase, Domain, InstanceTag))
-		{
-			
-			ApplyCustomizationActionToDomain(Domain, Action, DomainData.GetSubDomainsAsMap());
-		}
+		CustomizerComponent->ApplyAppearanceFromDatabase(CurrentCustomizationDataBase, AppearanceData);
 	}
 }
 
@@ -150,7 +163,44 @@ void ADinoCustomizerStudio::ApplyDefaultCameraSettings()
 	TargetCameraSettings = DefaultCameraSettings;
 }
 
-bool ADinoCustomizerStudio::InitializeCustomizationFromDatabase(UDinoCustomizerDatabase* InDatabase, bool bApplyMinimalAppearanceFromDataBase)
+void ADinoCustomizerStudio::AddCustomizableActorYawRotation(float Yaw)
+{
+	if(IsValid(CurrentCustomizationDataBase) == false || IsValid( CurrentCustomizableActor) == false) return;
+
+	// is rotation allowed ?
+	if(bAllowCustomizableActorYawRotation == false) return;
+
+	// no Value
+	if(Yaw == 0.0f) return;
+
+	// stop reset !
+	bResetCustomizableActorRotation = false;
+	
+	CurrentCustomizableActor->AddActorWorldRotation(FRotator(0.0f, Yaw, 0.0f));
+	
+}
+
+void ADinoCustomizerStudio::ResetCustomizableActorYawRotation()
+{
+	bResetCustomizableActorRotation = true;
+}
+
+void ADinoCustomizerStudio::SetAllowCustomizableActorYawRotation(bool bValue)
+{
+	bAllowCustomizableActorYawRotation = bValue;
+
+	if(bAllowCustomizableActorYawRotation == true)
+	{
+		bResetCustomizableActorRotation = false;
+	}
+	
+	if(bAllowCustomizableActorYawRotation == false &&  bResetRotationToDefaultWhenYawRotationSwitchedOff)
+	{
+		ResetCustomizableActorYawRotation();
+	}
+}
+
+bool ADinoCustomizerStudio::InitializeStudioFromDatabase(UDinoCustomizerDatabase* InDatabase, bool bApplyMinimalAppearanceFromDataBase)
 {
 
 	if(IsValid(InDatabase) == false ||  IsValid(InDatabase->CustomizableActorClass) == false || InDatabase->Domains.IsEmpty()) return false;
@@ -160,6 +210,7 @@ bool ADinoCustomizerStudio::InitializeCustomizationFromDatabase(UDinoCustomizerD
 	if(IsCustomizableClassAllowed(CustomizableActorClass) == false) return false;
 
 	CurrentCustomizationDataBase = InDatabase;
+	DefaultCameraSettings = InDatabase->DefaultCameraSettings;
 
 	FTransform SpawnTransform = CharacterPlacementLocation->GetComponentTransform();
 	SpawnTransform.SetScale3D(FVector(1.0f));
@@ -238,7 +289,7 @@ void ADinoCustomizerStudio::ApplyCustomizationActionToDomain(const FGameplayTag&
 	{
 		if(UDinoCustomizerComponent* CustomizerComponent = CurrentCustomizableActor->GetComponentByClass<UDinoCustomizerComponent>())
 		{
-			CustomizerComponent->ApplyInstanceToDomainFromStudio(this, Domain, Action, SubDomains);
+			CustomizerComponent->ApplyInstanceToDomainWithSubDomainData(Domain, Action, SubDomains);
 		}
 	}
 	

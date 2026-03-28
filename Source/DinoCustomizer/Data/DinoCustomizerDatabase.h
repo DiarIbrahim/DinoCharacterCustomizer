@@ -94,6 +94,9 @@ class DINOCUSTOMIZER_API UDinoCustomizerDatabase : public UObject
 public:
 
 
+
+	// ---- Settings
+	
 	/*
 	*  this is the actor class that we want to customize
 	*  must implement DinoCustomizableActorInterface
@@ -101,12 +104,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UClass* CustomizableActorClass;
 	/*
-	*  The actors placement transform in the strudio
+	*  The actors placement Location offset in the studio
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FVector ActorPlacementLocationOffset;
+	/*
+	 *  actor placement rotation offset in the studio
+	 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FRotator ActorPlacementRotationOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= "Camera")
+	FDinoCustomizerCameraSettings DefaultCameraSettings;
+
+	// ----
+
+
 	
 
 	UPROPERTY(BlueprintReadOnly, Instanced)
